@@ -1,0 +1,281 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 2.5rem 0;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .quick-action-card {
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .quick-action-card:hover {
+        border-color: var(--primary-color);
+        background-color: rgba(26, 35, 126, 0.05);
+    }
+    
+    .activity-item {
+        border-left: 3px solid var(--primary-color);
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .activity-item:hover {
+        background-color: var(--light-bg);
+        padding-left: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Welcome Header -->
+    <div class="dashboard-header fade-in-up">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="fw-bold mb-2">
+                        <i class="bi bi-speedometer2 me-3"></i>Welcome back, {{ user.first_name|default:user.username }}!
+                    </h1>
+                    <p class="mb-0 opacity-75" style="font-size: 1.1rem;">
+                        <i class="bi bi-calendar-check me-2"></i>{{ today|date:"l, F d, Y" }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a href="{% url 'services' %}" class="btn btn-light btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>New Application
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="bi bi-file-earmark-text-fill" style="font-size: 2.5rem; opacity: 0.3; position: absolute; right: 1rem; top: 1rem;"></i>
+                <h3>{{ stats.total_applications }}</h3>
+                <p><i class="bi bi-file-earmark-text me-2"></i>Total Applications</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="bi bi-clock-history" style="font-size: 2.5rem; opacity: 0.3; position: absolute; right: 1rem; top: 1rem;"></i>
+                <h3>{{ stats.pending }}</h3>
+                <p><i class="bi bi-hourglass-split me-2"></i>Pending Review</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="bi bi-check-circle-fill" style="font-size: 2.5rem; opacity: 0.3; position: absolute; right: 1rem; top: 1rem;"></i>
+                <h3>{{ stats.approved }}</h3>
+                <p><i class="bi bi-check-circle me-2"></i>Approved</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                <i class="bi bi-x-circle-fill" style="font-size: 2.5rem; opacity: 0.3; position: absolute; right: 1rem; top: 1rem;"></i>
+                <h3>{{ stats.rejected }}</h3>
+                <p><i class="bi bi-x-circle me-2"></i>Rejected</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{% url 'apply_birth_certificate' %}" class="text-decoration-none">
+                                <div class="card quick-action-card text-center p-3 h-100">
+                                    <i class="bi bi-file-earmark-text" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                                    <h6 class="mt-2 mb-0 small fw-bold">Birth Certificate</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{% url 'apply_death_certificate' %}" class="text-decoration-none">
+                                <div class="card quick-action-card text-center p-3 h-100">
+                                    <i class="bi bi-file-earmark-x" style="font-size: 2.5rem; color: var(--danger-color);"></i>
+                                    <h6 class="mt-2 mb-0 small fw-bold">Death Certificate</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{% url 'apply_income_certificate' %}" class="text-decoration-none">
+                                <div class="card quick-action-card text-center p-3 h-100">
+                                    <i class="bi bi-currency-rupee" style="font-size: 2.5rem; color: var(--success-color);"></i>
+                                    <h6 class="mt-2 mb-0 small fw-bold">Income Certificate</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{% url 'pay_tax' %}" class="text-decoration-none">
+                                <div class="card quick-action-card text-center p-3 h-100">
+                                    <i class="bi bi-cash-stack" style="font-size: 2.5rem; color: var(--accent-color);"></i>
+                                    <h6 class="mt-2 mb-0 small fw-bold">Pay Tax</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{% url 'file_complaint' %}" class="text-decoration-none">
+                                <div class="card quick-action-card text-center p-3 h-100">
+                                    <i class="bi bi-megaphone" style="font-size: 2.5rem; color: var(--warning-color);"></i>
+                                    <h6 class="mt-2 mb-0 small fw-bold">File Complaint</h6>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <a href="{% url 'my_applications' %}" class="text-decoration-none">
+                                <div class="card quick-action-card text-center p-3 h-100">
+                                    <i class="bi bi-list-check" style="font-size: 2.5rem; color: #9c27b0;"></i>
+                                    <h6 class="mt-2 mb-0 small fw-bold">All Applications</h6>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Row -->
+    <div class="row g-4">
+        <!-- Recent Applications -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-clock-history me-2 text-primary"></i>Recent Applications
+                        </h5>
+                        <span class="badge bg-primary">{{ recent_applications|length }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_applications %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Application No.</th>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for app in recent_applications %}
+                                    <tr>
+                                        <td>
+                                            <strong class="text-primary">{{ app.application_number }}</strong>
+                                        </td>
+                                        <td>{{ app.get_application_type_display }}</td>
+                                        <td><small class="text-muted">{{ app.applied_date|date:"d M, Y" }}</small></td>
+                                        <td>
+                                            <span class="badge badge-{{ app.status }}">
+                                                {{ app.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'application_detail' app.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer bg-white border-0 text-center">
+                            <a href="{% url 'my_applications' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-right-circle me-2"></i>View All Applications
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox" style="font-size: 4rem; color: #ddd;"></i>
+                            <p class="text-muted mt-3 mb-3">No applications yet</p>
+                            <a href="{% url 'services' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Apply for Service
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Complaints -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-megaphone me-2 text-danger"></i>Recent Complaints
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if complaints %}
+                        {% for complaint in complaints %}
+                        <div class="activity-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">{{ complaint.complaint_number }}</h6>
+                                    <p class="mb-1 small text-muted">{{ complaint.subject|truncatewords:8 }}</p>
+                                    <span class="badge badge-{{ complaint.status }} small">
+                                        {{ complaint.get_status_display }}
+                                    </span>
+                                </div>
+                                <small class="text-muted">{{ complaint.filed_date|date:"d M" }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'my_complaints' %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-arrow-right-circle me-1"></i>View All
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-chat-dots" style="font-size: 3rem; color: #ddd;"></i>
+                            <p class="text-muted small mt-2 mb-0">No complaints filed</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Help & Support -->
+            <div class="card border-0" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-headset" style="font-size: 3rem; opacity: 0.8;"></i>
+                    <h5 class="mt-3 mb-2 fw-bold">Need Help?</h5>
+                    <p class="small opacity-75 mb-3">Our support team is here to assist you</p>
+                    <a href="{% url 'about' %}" class="btn btn-light">
+                        <i class="bi bi-telephone me-2"></i>Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

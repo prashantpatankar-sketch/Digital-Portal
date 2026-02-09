@@ -1,0 +1,148 @@
+{% extends 'portal_app/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-page {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, rgba(26, 35, 126, 0.05), rgba(255, 111, 0, 0.05));
+    }
+    
+    .auth-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    
+    .auth-card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+    
+    .auth-card-header i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .auth-card-body {
+        padding: 3rem;
+    }
+    
+    .form-floating .form-control {
+        border-radius: 10px;
+    }
+    
+    .social-login {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .social-btn {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        color: #666;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .social-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-7">
+                <div class="card auth-card fade-in-up">
+                    <div class="auth-card-header">
+                        <i class="bi bi-shield-lock"></i>
+                        <h3 class="mb-2 fw-bold">Welcome Back!</h3>
+                        <p class="mb-0 opacity-75">Login to access your dashboard</p>
+                    </div>
+                    <div class="auth-card-body">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="form-floating mb-3">
+                                {{ form.username }}
+                                <label for="{{ form.username.id_for_label }}">
+                                    <i class="bi bi-person me-2"></i>Username or Email
+                                </label>
+                                {% if form.username.errors %}
+                                    <div class="text-danger mt-1 small">{{ form.username.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-floating mb-3">
+                                {{ form.password }}
+                                <label for="{{ form.password.id_for_label }}">
+                                    <i class="bi bi-lock me-2"></i>Password
+                                </label>
+                                {% if form.password.errors %}
+                                    <div class="text-danger mt-1 small">{{ form.password.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="text-primary text-decoration-none">Forgot Password?</a>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg py-3">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Login to Dashboard
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <div class="d-flex align-items-center my-4">
+                                <hr class="flex-grow-1">
+                                <span class="px-3 text-muted small">OR</span>
+                                <hr class="flex-grow-1">
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Don't have an account?
+                                <a href="{% url 'register' %}" class="text-primary fw-bold text-decoration-none">
+                                    Register here
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <p class="text-muted">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Your data is secure and encrypted
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

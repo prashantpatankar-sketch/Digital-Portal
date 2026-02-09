@@ -1,0 +1,828 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Admin Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .gov-header {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+        padding: 1.5rem 0;
+        border-bottom: 3px solid #ff9933;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-left: 4px solid;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .stat-card-primary { border-left-color: #0d6efd; }
+    .stat-card-success { border-left-color: #198754; }
+    .stat-card-warning { border-left-color: #ffc107; }
+    .stat-card-danger { border-left-color: #dc3545; }
+    .stat-card-info { border-left-color: #0dcaf0; }
+    .stat-card-secondary { border-left-color: #6c757d; }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .stat-icon {
+        font-size: 2rem;
+        opacity: 0.3;
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+    }
+    
+    .section-title {
+        font-weight: 600;
+        color: #1e3c72;
+        border-left: 4px solid #ff9933;
+        padding-left: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    
+    .dashboard-card-header {
+        background: #f8f9fa;
+        border-bottom: 2px solid #e9ecef;
+        padding: 1rem 1.5rem;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .dashboard-card-body {
+        padding: 1.5rem;
+    }
+    
+    .quick-action-btn {
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        background: white;
+        display: block;
+        text-decoration: none;
+        color: #495057;
+    }
+    
+    .quick-action-btn:hover {
+        border-color: #0d6efd;
+        background: #f8f9ff;
+        color: #0d6efd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+    }
+    
+    .quick-action-icon {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .table-dashboard {
+        font-size: 0.875rem;
+    }
+    
+    .table-dashboard th {
+        background: #f8f9fa;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .gov-badge {
+        background: linear-gradient(135deg, #ff9933 0%, #138808 100%);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Government Header -->
+<div class="gov-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-1">
+                    <i class="bi bi-shield-check me-2"></i>
+                    Admin Control Panel
+                </h1>
+                <p class="mb-0 opacity-75">
+                    <i class="bi bi-geo-alt me-1"></i>
+                    Digital Gram Panchayat Portal | Government of India
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <span class="gov-badge">
+                    <i class="bi bi-person-circle me-1"></i>
+                    {{ request.user.get_full_name }}
+                </span>
+                <div class="mt-2">
+                    <small class="opacity-75">
+                        Last Login: {{ request.user.last_login|date:"d M Y, H:i" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid my-4">
+    <!-- Summary Statistics -->
+    <h4 class="section-title">
+        <i class="bi bi-graph-up me-2"></i>Overview Statistics
+    </h4>
+    
+    <!-- Row 1: User Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-primary position-relative">
+                <i class="bi bi-people stat-icon"></i>
+                <h2 class="stat-number text-primary">{{ total_citizens }}</h2>
+                <p class="stat-label mb-0">Total Citizens</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-success position-relative">
+                <i class="bi bi-person-badge stat-icon"></i>
+                <h2 class="stat-number text-success">{{ total_staff }}</h2>
+                <p class="stat-label mb-0">Staff Members</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-info position-relative">
+                <i class="bi bi-shield-check stat-icon"></i>
+                <h2 class="stat-number text-info">{{ total_admins }}</h2>
+                <p class="stat-label mb-0">Administrators</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-warning position-relative">
+                <i class="bi bi-person-x stat-icon"></i>
+                <h2 class="stat-number text-warning">{{ inactive_users }}</h2>
+                <p class="stat-label mb-0">Inactive Users</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-success position-relative">
+                <i class="bi bi-person-plus stat-icon"></i>
+                <h2 class="stat-number text-success">{{ new_users_today }}</h2>
+                <p class="stat-label mb-0">New Today</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-primary position-relative">
+                <i class="bi bi-people-fill stat-icon"></i>
+                <h2 class="stat-number text-primary">{{ total_citizens|add:total_staff|add:total_admins }}</h2>
+                <p class="stat-label mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Row 2: Application Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-primary position-relative">
+                <i class="bi bi-file-earmark-text stat-icon"></i>
+                <h2 class="stat-number text-primary">{{ total_applications }}</h2>
+                <p class="stat-label mb-0">Total Applications</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-warning position-relative">
+                <i class="bi bi-hourglass-split stat-icon"></i>
+                <h2 class="stat-number text-warning">{{ pending_applications }}</h2>
+                <p class="stat-label mb-0">Pending Review</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-info position-relative">
+                <i class="bi bi-eye stat-icon"></i>
+                <h2 class="stat-number text-info">{{ under_review_applications }}</h2>
+                <p class="stat-label mb-0">Under Review</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-success position-relative">
+                <i class="bi bi-check-circle stat-icon"></i>
+                <h2 class="stat-number text-success">{{ approved_applications }}</h2>
+                <p class="stat-label mb-0">Approved</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-danger position-relative">
+                <i class="bi bi-x-circle stat-icon"></i>
+                <h2 class="stat-number text-danger">{{ rejected_applications }}</h2>
+                <p class="stat-label mb-0">Rejected</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-success position-relative">
+                <i class="bi bi-calendar-check stat-icon"></i>
+                <h2 class="stat-number text-success">{{ approved_today }}</h2>
+                <p class="stat-label mb-0">Approved Today</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Row 3: Service Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-info position-relative">
+                <i class="bi bi-file-earmark-medical stat-icon"></i>
+                <h2 class="stat-number text-info">{{ birth_certs }}</h2>
+                <p class="stat-label mb-0">Birth Certificates</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-secondary position-relative">
+                <i class="bi bi-file-earmark-minus stat-icon"></i>
+                <h2 class="stat-number text-secondary">{{ death_certs }}</h2>
+                <p class="stat-label mb-0">Death Certificates</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-success position-relative">
+                <i class="bi bi-cash-coin stat-icon"></i>
+                <h2 class="stat-number text-success">{{ income_certs }}</h2>
+                <p class="stat-label mb-0">Income Certificates</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-primary position-relative">
+                <i class="bi bi-droplet stat-icon"></i>
+                <h2 class="stat-number text-primary">{{ water_tax_count }}</h2>
+                <p class="stat-label mb-0">Water Tax</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-warning position-relative">
+                <i class="bi bi-house stat-icon"></i>
+                <h2 class="stat-number text-warning">{{ house_tax_count }}</h2>
+                <p class="stat-label mb-0">House Tax</p>
+            </div>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="stat-card stat-card-danger position-relative">
+                <i class="bi bi-megaphone stat-icon"></i>
+                <h2 class="stat-number text-danger">{{ open_complaints }}</h2>
+                <p class="stat-label mb-0">Open Complaints</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <h4 class="section-title mt-5">
+        <i class="bi bi-lightning-charge me-2"></i>Quick Actions
+    </h4>
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+            <a href="{% url 'admin_applications' %}" class="quick-action-btn">
+                <i class="bi bi-file-earmark-check quick-action-icon text-primary"></i>
+                <strong>Manage Applications</strong>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+            <a href="{% url 'admin_applications' %}?status=pending" class="quick-action-btn">
+                <i class="bi bi-clock-history quick-action-icon text-warning"></i>
+                <strong>Pending Reviews</strong>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+            <a href="{% url 'admin_complaints' %}" class="quick-action-btn">
+                <i class="bi bi-megaphone quick-action-icon text-danger"></i>
+                <strong>Complaints</strong>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+            <a href="#citizenManagement" class="quick-action-btn">
+                <i class="bi bi-people quick-action-icon text-success"></i>
+                <strong>Citizen Management</strong>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+            <a href="#staffManagement" class="quick-action-btn">
+                <i class="bi bi-person-badge quick-action-icon text-info"></i>
+                <strong>Staff Management</strong>
+            </a>
+        </div>
+        <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
+            <a href="/admin/" target="_blank" class="quick-action-btn">
+                <i class="bi bi-gear quick-action-icon text-secondary"></i>
+                <strong>System Settings</strong>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <h4 class="section-title mt-5">
+        <i class="bi bi-bar-chart me-2"></i>Analytics & Insights
+    </h4>
+    <div class="row mb-4">
+        <!-- Application Status Distribution -->
+        <div class="col-lg-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>
+                        Application Status Distribution
+                    </h5>
+                </div>
+                <div class="dashboard-card-body">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Application Types -->
+        <div class="col-lg-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Application Types
+                    </h5>
+                </div>
+                <div class="dashboard-card-body">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Data Tables Section -->
+    <div class="row">
+        <!-- Pending Applications -->
+        <div class="col-lg-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-hourglass-split me-2"></i>
+                        Pending Applications
+                    </h5>
+                    <a href="{% url 'admin_applications' %}?status=pending" class="btn btn-sm btn-primary">
+                        View All ({{ pending_applications }})
+                    </a>
+                </div>
+                <div class="dashboard-card-body p-0">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        {% if pending_applications_list %}
+                        <table class="table table-dashboard table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>App No.</th>
+                                    <th>Type</th>
+                                    <th>Applicant</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in pending_applications_list %}
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">{{ app.application_number }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ app.get_application_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ app.applicant.get_full_name }}</td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ app.application_date|date:"d M Y" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin_review_application' app.id %}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-check-circle display-4"></i>
+                            <p class="mt-2">No pending applications</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Applications -->
+        <div class="col-lg-6 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Recent Applications
+                    </h5>
+                </div>
+                <div class="dashboard-card-body p-0">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        {% if recent_applications %}
+                        <table class="table table-dashboard table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>App No.</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in recent_applications %}
+                                <tr>
+                                    <td>
+                                        <strong class="text-primary">{{ app.application_number }}</strong>
+                                    </td>
+                                    <td>
+                                        <small>{{ app.get_application_type_display }}</small>
+                                    </td>
+                                    <td>
+                                        {% if app.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                        {% elif app.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                        {% elif app.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                        {% else %}
+                                        <span class="badge bg-info">{{ app.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ app.application_date|date:"d M, H:i" }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <p>No applications yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Citizen and Staff Management -->
+    <div class="row">
+        <!-- Recent Citizens -->
+        <div class="col-lg-6 mb-4" id="citizenManagement">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people me-2"></i>
+                        Recent Citizens
+                    </h5>
+                    <a href="/admin/portal_app/customuser/?role__exact=citizen" 
+                       target="_blank" class="btn btn-sm btn-primary">
+                        Manage All
+                    </a>
+                </div>
+                <div class="dashboard-card-body p-0">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        {% if recent_citizens %}
+                        <table class="table table-dashboard table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Joined</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for citizen in recent_citizens %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ citizen.get_full_name }}</strong>
+                                    </td>
+                                    <td>
+                                        <small>{{ citizen.email }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ citizen.phone_number }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ citizen.date_joined|date:"d M Y" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if citizen.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <p>No citizens registered yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Staff Management -->
+        <div class="col-lg-6 mb-4" id="staffManagement">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge me-2"></i>
+                        Pending Staff Approvals
+                    </h5>
+                    <a href="/admin/portal_app/customuser/?is_active__exact=0" 
+                       target="_blank" class="btn btn-sm btn-warning">
+                        Review All
+                    </a>
+                </div>
+                <div class="dashboard-card-body p-0">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        {% if pending_staff %}
+                        <table class="table table-dashboard table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Email</th>
+                                    <th>Registered</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for staff in pending_staff %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ staff.get_full_name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ staff.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ staff.email }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ staff.date_joined|date:"d M Y" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <a href="/admin/portal_app/customuser/{{ staff.id }}/change/" 
+                                           target="_blank" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-check-circle"></i> Approve
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-check-circle display-4 text-success"></i>
+                            <p class="mt-2">No pending staff approvals</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Complaints -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-megaphone me-2"></i>
+                        Recent Complaints
+                    </h5>
+                    <a href="{% url 'admin_complaints' %}" class="btn btn-sm btn-primary">
+                        View All ({{ total_complaints }})
+                    </a>
+                </div>
+                <div class="dashboard-card-body p-0">
+                    {% if recent_complaints %}
+                    <table class="table table-dashboard table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Complaint No.</th>
+                                <th>Subject</th>
+                                <th>Complainant</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Filed Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in recent_complaints %}
+                            <tr>
+                                <td>
+                                    <strong class="text-primary">{{ complaint.complaint_number }}</strong>
+                                </td>
+                                <td>{{ complaint.subject|truncatewords:5 }}</td>
+                                <td>{{ complaint.complainant.get_full_name }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ complaint.get_category_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if complaint.status == 'open' %}
+                                    <span class="badge bg-danger">Open</span>
+                                    {% elif complaint.status == 'in_progress' %}
+                                    <span class="badge bg-warning">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Resolved</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ complaint.filed_date|date:"d M Y" }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <a href="{% url 'admin_update_complaint' complaint.id %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-check-circle display-4"></i>
+                        <p class="mt-2">No complaints filed</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js for analytics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Application Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Under Review', 'Approved', 'Rejected'],
+            datasets: [{
+                data: [
+                    {{ pending_applications }},
+                    {{ under_review_applications }},
+                    {{ approved_applications }},
+                    {{ rejected_applications }}
+                ],
+                backgroundColor: [
+                    '#ffc107',
+                    '#0dcaf0',
+                    '#198754',
+                    '#dc3545'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.parsed || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return label + ': ' + value + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Application Types Chart
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for stat in app_type_stats %}
+                '{{ stat.application_type|title }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Applications',
+                data: [
+                    {% for stat in app_type_stats %}
+                    {{ stat.count }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: '#0d6efd',
+                borderColor: '#0d6efd',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

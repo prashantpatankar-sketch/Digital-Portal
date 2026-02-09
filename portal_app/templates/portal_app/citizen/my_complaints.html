@@ -1,0 +1,236 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}My Complaints{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-card h3 {
+        font-size: 2.5rem;
+        margin: 0;
+    }
+    
+    .stat-card p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+    
+    .stat-card-secondary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    
+    .stat-card-success {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i class="bi bi-megaphone me-2"></i>My Complaints
+            </h2>
+            <p class="text-muted">Track and manage your filed complaints</p>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stat-card">
+                <h3>{{ total_complaints }}</h3>
+                <p>Total Complaints</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card stat-card-secondary">
+                <h3>{{ open_complaints }}</h3>
+                <p>Open/In Progress</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card stat-card-success">
+                <h3>{{ resolved_complaints }}</h3>
+                <p>Resolved</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'file_complaint' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>File New Complaint
+                </a>
+                <a href="?status=open" class="btn btn-outline-danger">
+                    <i class="bi bi-circle-fill me-1"></i>Open
+                </a>
+                <a href="?status=in_progress" class="btn btn-outline-warning">
+                    <i class="bi bi-arrow-repeat me-1"></i>In Progress
+                </a>
+                <a href="?status=resolved" class="btn btn-outline-success">
+                    <i class="bi bi-check-circle-fill me-1"></i>Resolved
+                </a>
+                {% if status_filter %}
+                <a href="{% url 'my_complaints' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>Clear Filter
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Complaints Table -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                Complaint List
+                {% if status_filter %}
+                <span class="badge bg-primary ms-2">{{ status_filter|title }}</span>
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Complaint No.</th>
+                            <th>Subject</th>
+                            <th>Category</th>
+                            <th>Filed Date</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Assignment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in page_obj %}
+                        <tr>
+                            <td>
+                                <strong class="text-primary">{{ complaint.complaint_number }}</strong>
+                            </td>
+                            <td>{{ complaint.subject|truncatewords:6 }}</td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ complaint.get_category_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <small>{{ complaint.filed_date|date:"d M, Y" }}</small>
+                            </td>
+                            <td>
+                                {% if complaint.status == 'open' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-circle-fill me-1"></i>Open
+                                </span>
+                                {% elif complaint.status == 'in_progress' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-arrow-repeat me-1"></i>In Progress
+                                </span>
+                                {% elif complaint.status == 'resolved' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Resolved
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if complaint.priority == 'urgent' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Urgent
+                                </span>
+                                {% elif complaint.priority == 'high' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                                {% elif complaint.priority == 'medium' %}
+                                <span class="badge bg-info">Medium</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if complaint.assigned_to %}
+                                <i class="bi bi-person-check-fill text-success" title="Assigned"></i>
+                                {% else %}
+                                <i class="bi bi-hourglass-split text-warning" title="Pending"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'complaint_detail' complaint.id %}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer bg-white">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Last</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="text-muted mt-3">
+                    {% if status_filter %}
+                    No complaints found with status "{{ status_filter }}"
+                    {% else %}
+                    No complaints filed yet
+                    {% endif %}
+                </p>
+                <a href="{% url 'file_complaint' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-megaphone me-2"></i>File Your First Complaint
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Services - Digital Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center fw-bold mb-5">Available Services</h2>
+    
+    <div class="row g-4">
+        <!-- Birth Certificate -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4>Birth Certificate</h4>
+                            <p class="text-muted">
+                                Apply for birth certificate online. Required for school admissions, passport, and other official purposes.
+                            </p>
+                            <p><strong>Required Documents:</strong></p>
+                            <ul class="small">
+                                <li>Hospital/Doctor Certificate</li>
+                                <li>Parents ID Proof (Aadhar/PAN)</li>
+                                <li>Address Proof</li>
+                            </ul>
+                            <p><strong>Processing Time:</strong> 3-5 working days</p>
+                            <a href="{% url 'apply_birth_certificate' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-right-circle me-2"></i>Apply Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Death Certificate -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-file-earmark-x" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4>Death Certificate</h4>
+                            <p class="text-muted">
+                                Apply for death certificate. Required for legal procedures, property transfer, and insurance claims.
+                            </p>
+                            <p><strong>Required Documents:</strong></p>
+                            <ul class="small">
+                                <li>Hospital/Doctor Certificate or Panchnama</li>
+                                <li>Deceased Person's ID Proof</li>
+                                <li>Informant's ID Proof</li>
+                            </ul>
+                            <p><strong>Processing Time:</strong> 2-4 working days</p>
+                            <a href="{% url 'apply_death_certificate' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-right-circle me-2"></i>Apply Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Income Certificate -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-currency-rupee" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4>Income Certificate</h4>
+                            <p class="text-muted">
+                                Get income certificate for scholarships, government schemes, and fee concessions.
+                            </p>
+                            <p><strong>Required Documents:</strong></p>
+                            <ul class="small">
+                                <li>Income Proof (Salary Slip/Form 16)</li>
+                                <li>ID Proof (Aadhar/PAN)</li>
+                                <li>Ration Card (if available)</li>
+                            </ul>
+                            <p><strong>Processing Time:</strong> 5-7 working days</p>
+                            <a href="{% url 'apply_income_certificate' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-right-circle me-2"></i>Apply Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Water Tax -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-droplet" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4>Water Tax Payment</h4>
+                            <p class="text-muted">
+                                Pay your water tax online and get instant digital receipt. No need to visit office.
+                            </p>
+                            <p><strong>Required Information:</strong></p>
+                            <ul class="small">
+                                <li>Property Number</li>
+                                <li>Property Address</li>
+                                <li>Property Area</li>
+                                <li>Financial Year</li>
+                            </ul>
+                            <p><strong>Processing Time:</strong> Instant</p>
+                            <a href="{% url 'pay_tax' %}" class="btn btn-success">
+                                <i class="bi bi-cash-stack me-2"></i>Pay Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- House Tax -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-house" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4>House Tax Payment</h4>
+                            <p class="text-muted">
+                                Pay your property/house tax online and receive digital receipt immediately.
+                            </p>
+                            <p><strong>Required Information:</strong></p>
+                            <ul class="small">
+                                <li>Property Number</li>
+                                <li>Property Address</li>
+                                <li>Property Area (sq ft)</li>
+                                <li>Financial Year</li>
+                            </ul>
+                            <p><strong>Processing Time:</strong> Instant</p>
+                            <a href="{% url 'pay_tax' %}" class="btn btn-success">
+                                <i class="bi bi-cash-stack me-2"></i>Pay Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Complaint -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-megaphone" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4>File Complaint/Grievance</h4>
+                            <p class="text-muted">
+                                Report issues related to water supply, roads, sanitation, electricity, and other civic problems.
+                            </p>
+                            <p><strong>Complaint Categories:</strong></p>
+                            <ul class="small">
+                                <li>Water Supply, Electricity</li>
+                                <li>Road & Infrastructure</li>
+                                <li>Sanitation, Waste Management</li>
+                                <li>Street Lights, Drainage</li>
+                            </ul>
+                            <p><strong>Response Time:</strong> 24-48 hours</p>
+                            <a href="{% url 'file_complaint' %}" class="btn btn-danger">
+                                <i class="bi bi-exclamation-circle me-2"></i>File Complaint
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

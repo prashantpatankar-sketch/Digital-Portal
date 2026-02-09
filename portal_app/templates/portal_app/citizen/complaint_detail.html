@@ -1,0 +1,264 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Complaint Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+        border-left: 2px solid #dee2e6;
+    }
+    
+    .timeline-item:last-child {
+        border-left: 2px solid transparent;
+    }
+    
+    .timeline-icon {
+        position: absolute;
+        left: -0.6rem;
+        top: 0;
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+    }
+    
+    .timeline-content {
+        margin-left: 1.5rem;
+        background: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+    }
+    
+    .status-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Left Column - Complaint Details -->
+        <div class="col-lg-8">
+            <!-- Status Card -->
+            <div class="status-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-2">
+                            <i class="bi bi-megaphone me-2"></i>
+                            {{ complaint.complaint_number }}
+                        </h3>
+                        <p class="mb-0 opacity-75">Filed on {{ complaint.filed_date|date:"d M, Y h:i A" }}</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        {% if complaint.status == 'open' %}
+                        <span class="badge bg-danger fs-5">
+                            <i class="bi bi-circle-fill me-1"></i>Open
+                        </span>
+                        {% elif complaint.status == 'in_progress' %}
+                        <span class="badge bg-warning text-dark fs-5">
+                            <i class="bi bi-arrow-repeat me-1"></i>In Progress
+                        </span>
+                        {% elif complaint.status == 'resolved' %}
+                        <span class="badge bg-success fs-5">
+                            <i class="bi bi-check-circle-fill me-1"></i>Resolved
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary fs-5">
+                            <i class="bi bi-x-circle-fill me-1"></i>Closed
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Complaint Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Complaint Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 mb-3">
+                            <p class="text-muted mb-1">Category</p>
+                            <p class="mb-0">
+                                <span class="badge bg-secondary">{{ complaint.get_category_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="text-muted mb-1">Priority</p>
+                            <p class="mb-0">
+                                {% if complaint.priority == 'urgent' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>Urgent
+                                </span>
+                                {% elif complaint.priority == 'high' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-arrow-up me-1"></i>High
+                                </span>
+                                {% elif complaint.priority == 'medium' %}
+                                <span class="badge bg-info">Medium</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Low</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="text-muted mb-1">Assignment Status</p>
+                            <p class="mb-0">
+                                {% if complaint.assigned_to %}
+                                <i class="bi bi-person-check-fill text-success me-1"></i>
+                                <span class="text-success">Assigned</span>
+                                {% else %}
+                                <i class="bi bi-hourglass-split text-warning me-1"></i>
+                                <span class="text-warning">Pending Assignment</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">Subject</p>
+                        <h6>{{ complaint.subject }}</h6>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">Description</p>
+                        <p>{{ complaint.description }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">Location</p>
+                        <p>
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                            {{ complaint.location }}
+                        </p>
+                    </div>
+                    
+                    {% if complaint.complaint_photo %}
+                    <div class="mb-3">
+                        <p class="text-muted mb-2">Photo Evidence</p>
+                        <img src="{{ complaint.complaint_photo.url }}" alt="Complaint Photo" 
+                             class="img-fluid rounded border" style="max-height: 400px;">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Resolution Card (if resolved) -->
+            {% if complaint.resolution_remarks %}
+            <div class="card border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-check-circle-fill me-2"></i>Resolution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">{{ complaint.resolution_remarks }}</p>
+                    {% if complaint.resolved_date %}
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-calendar-check me-1"></i>
+                        Resolved on {{ complaint.resolved_date|date:"d M, Y h:i A" }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Action Button -->
+            <div class="d-grid">
+                <a href="{% url 'my_complaints' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-arrow-left me-2"></i>Back to My Complaints
+                </a>
+            </div>
+        </div>
+        
+        <!-- Right Column - Activity Timeline -->
+        <div class="col-lg-4">
+            <div class="card sticky-top" style="top: 1rem;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Activity Timeline
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 700px; overflow-y: auto;">
+                    {% if history %}
+                    <div class="timeline">
+                        {% for item in history %}
+                        <div class="timeline-item">
+                            <div class="timeline-icon 
+                                {% if item.action == 'created' %}bg-primary text-white
+                                {% elif item.action == 'assigned' %}bg-info text-white
+                                {% elif item.action == 'status_changed' %}bg-warning text-dark
+                                {% elif item.action == 'priority_changed' %}bg-danger text-white
+                                {% elif item.action == 'resolved' %}bg-success text-white
+                                {% elif item.action == 'closed' %}bg-secondary text-white
+                                {% else %}bg-light text-dark{% endif %}">
+                                {% if item.action == 'created' %}
+                                <i class="bi bi-plus-circle-fill"></i>
+                                {% elif item.action == 'assigned' %}
+                                <i class="bi bi-person-fill-check"></i>
+                                {% elif item.action == 'status_changed' %}
+                                <i class="bi bi-arrow-repeat"></i>
+                                {% elif item.action == 'priority_changed' %}
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                {% elif item.action == 'resolved' %}
+                                <i class="bi bi-check-circle-fill"></i>
+                                {% elif item.action == 'closed' %}
+                                <i class="bi bi-x-circle-fill"></i>
+                                {% else %}
+                                <i class="bi bi-pencil-fill"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <div class="fw-bold text-capitalize">
+                                    {{ item.action|replace:"_":" " }}
+                                </div>
+                                {% if item.old_value or item.new_value %}
+                                <small class="text-muted d-block mt-1">
+                                    {% if item.old_value %}
+                                    <span class="text-decoration-line-through">{{ item.old_value }}</span>
+                                    →
+                                    {% endif %}
+                                    <span class="text-success fw-bold">{{ item.new_value }}</span>
+                                </small>
+                                {% endif %}
+                                {% if item.notes %}
+                                <small class="d-block mt-1">{{ item.notes }}</small>
+                                {% endif %}
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-clock me-1"></i>{{ item.performed_at|date:"d M, Y h:i A" }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-4 text-muted"></i>
+                        <p class="text-muted mt-2">No activity yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Manage Complaints - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-mini {
+        background: white;
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 3px solid;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-mini h4 {
+        font-size: 1.5rem;
+        margin: 0;
+    }
+    
+    .stat-mini p {
+        margin: 0.25rem 0 0 0;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .priority-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold">
+                <i class="bi bi-megaphone me-2"></i>
+                Complaint Management System
+            </h2>
+            <p class="text-muted">Review, assign, and resolve citizen complaints</p>
+        </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stat-mini" style="border-left-color: #0d6efd;">
+                <h4 class="text-primary">{{ total_complaints }}</h4>
+                <p>Total Complaints</p>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stat-mini" style="border-left-color: #dc3545;">
+                <h4 class="text-danger">{{ open_complaints }}</h4>
+                <p>Open</p>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stat-mini" style="border-left-color: #ffc107;">
+                <h4 class="text-warning">{{ in_progress_complaints }}</h4>
+                <p>In Progress</p>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stat-mini" style="border-left-color: #198754;">
+                <h4 class="text-success">{{ resolved_complaints }}</h4>
+                <p>Resolved</p>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stat-mini" style="border-left-color: #6c757d;">
+                <h4 class="text-secondary">{{ unassigned_complaints }}</h4>
+                <p>Unassigned</p>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="stat-mini" style="border-left-color: #e91e63;">
+                <h4 style="color: #e91e63;">{{ urgent_complaints }}</h4>
+                <p>Urgent</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Status</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Status</option>
+                    <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Category</label>
+                <select name="category" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    <option value="water_supply" {% if category_filter == 'water_supply' %}selected{% endif %}>Water Supply</option>
+                    <option value="electricity" {% if category_filter == 'electricity' %}selected{% endif %}>Electricity</option>
+                    <option value="road" {% if category_filter == 'road' %}selected{% endif %}>Road & Infrastructure</option>
+                    <option value="sanitation" {% if category_filter == 'sanitation' %}selected{% endif %}>Sanitation</option>
+                    <option value="street_light" {% if category_filter == 'street_light' %}selected{% endif %}>Street Light</option>
+                    <option value="drainage" {% if category_filter == 'drainage' %}selected{% endif %}>Drainage</option>
+                    <option value="waste_management" {% if category_filter == 'waste_management' %}selected{% endif %}>Waste Management</option>
+                    <option value="other" {% if category_filter == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Priority</label>
+                <select name="priority" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Priorities</option>
+                    <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+                    <option value="urgent" {% if priority_filter == 'urgent' %}selected{% endif %}>Urgent</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Assignment</label>
+                <select name="assigned" class="form-select" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="me" {% if assigned_filter == 'me' %}selected{% endif %}>Assigned to Me</option>
+                    <option value="unassigned" {% if assigned_filter == 'unassigned' %}selected{% endif %}>Unassigned</option>
+                </select>
+            </div>
+            {% if status_filter or category_filter or priority_filter or assigned_filter %}
+            <div class="col-12">
+                <a href="{% url 'admin_complaints' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-1"></i>Clear Filters
+                </a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+    
+    <!-- Complaints Table -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                Complaint List ({{ page_obj.paginator.count }} total)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Complaint No.</th>
+                            <th>Subject</th>
+                            <th>Complainant</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Assigned To</th>
+                            <th>Filed Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for complaint in page_obj %}
+                        <tr>
+                            <td>
+                                <strong class="text-primary">{{ complaint.complaint_number }}</strong>
+                            </td>
+                            <td>{{ complaint.subject|truncatewords:6 }}</td>
+                            <td>
+                                <small>{{ complaint.complainant.get_full_name }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ complaint.get_category_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if complaint.priority == 'urgent' %}
+                                <span class="priority-badge bg-danger text-white">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Urgent
+                                </span>
+                                {% elif complaint.priority == 'high' %}
+                                <span class="priority-badge bg-warning text-dark">
+                                    <i class="bi bi-arrow-up"></i> High
+                                </span>
+                                {% elif complaint.priority == 'medium' %}
+                                <span class="priority-badge bg-info text-white">Medium</span>
+                                {% else %}
+                                <span class="priority-badge bg-light text-dark">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if complaint.status == 'open' %}
+                                <span class="badge bg-danger">Open</span>
+                                {% elif complaint.status == 'in_progress' %}
+                                <span class="badge bg-warning">In Progress</span>
+                                {% elif complaint.status == 'resolved' %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if complaint.assigned_to %}
+                                <small>{{ complaint.assigned_to.get_full_name }}</small>
+                                {% else %}
+                                <span class="text-muted fst-italic">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ complaint.filed_date|date:"d M Y" }}
+                                </small>
+                            </td>
+                            <td>
+                                <a href="{% url 'admin_update_complaint' complaint.id %}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="card-footer bg-white">
+                <nav>
+                    <ul class="pagination pagination-sm mb-0 justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}{% if assigned_filter %}&assigned={{ assigned_filter }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}{% if assigned_filter %}&assigned={{ assigned_filter }}{% endif %}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}{% if assigned_filter %}&assigned={{ assigned_filter }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if priority_filter %}&priority={{ priority_filter }}{% endif %}{% if assigned_filter %}&assigned={{ assigned_filter }}{% endif %}">Last</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="text-muted mt-3">No complaints found</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

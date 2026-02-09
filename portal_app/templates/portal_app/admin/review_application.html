@@ -1,0 +1,136 @@
+{% extends 'portal_app/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Review Application{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-check me-2"></i>Review Application
+                    </h4>
+                    <span class="badge badge-{{ application.status }} fs-6">
+                        {{ application.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Application Info -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <p><strong>Application Number:</strong></p>
+                            <p class="text-primary">{{ application.application_number }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Type:</strong></p>
+                            <p>{{ application.get_application_type_display }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Applied Date:</strong></p>
+                            <p>{{ application.applied_date|date:"d M, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Applicant:</strong></p>
+                            <p>{{ application.applicant.get_full_name }}</p>
+                            <p class="text-muted small">
+                                <i class="bi bi-envelope me-1"></i>{{ application.applicant.email }}<br>
+                                <i class="bi bi-telephone me-1"></i>{{ application.applicant.phone_number }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Address:</strong></p>
+                            <p class="text-muted">{{ application.applicant.address }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Certificate Details -->
+                    {% if certificate_data %}
+                    <h5 class="mb-3">Application Details</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered">
+                            {% if application.application_type == 'birth_certificate' %}
+                                <tr><th>Child Name</th><td>{{ certificate_data.child_name }}</td></tr>
+                                <tr><th>Gender</th><td>{{ certificate_data.get_child_gender_display }}</td></tr>
+                                <tr><th>Date of Birth</th><td>{{ certificate_data.date_of_birth }}</td></tr>
+                                <tr><th>Place of Birth</th><td>{{ certificate_data.place_of_birth }}</td></tr>
+                                <tr><th>Father's Name</th><td>{{ certificate_data.father_name }}</td></tr>
+                                <tr><th>Father's Aadhar</th><td>{{ certificate_data.father_aadhar }}</td></tr>
+                                <tr><th>Mother's Name</th><td>{{ certificate_data.mother_name }}</td></tr>
+                                <tr><th>Mother's Aadhar</th><td>{{ certificate_data.mother_aadhar }}</td></tr>
+                                <tr><th>Permanent Address</th><td>{{ certificate_data.permanent_address }}</td></tr>
+                                <tr>
+                                    <th>Hospital Certificate</th>
+                                    <td><a href="{{ certificate_data.hospital_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View Document</a></td>
+                                </tr>
+                                <tr>
+                                    <th>Parents ID Proof</th>
+                                    <td><a href="{{ certificate_data.parents_id_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View Document</a></td>
+                                </tr>
+                            {% elif application.application_type == 'death_certificate' %}
+                                <tr><th>Deceased Name</th><td>{{ certificate_data.deceased_name }}</td></tr>
+                                <tr><th>Gender</th><td>{{ certificate_data.get_deceased_gender_display }}</td></tr>
+                                <tr><th>Age</th><td>{{ certificate_data.deceased_age }} years</td></tr>
+                                <tr><th>Date of Death</th><td>{{ certificate_data.date_of_death }}</td></tr>
+                                <tr><th>Place of Death</th><td>{{ certificate_data.place_of_death }}</td></tr>
+                                <tr><th>Cause of Death</th><td>{{ certificate_data.cause_of_death }}</td></tr>
+                                <tr><th>Informant Name</th><td>{{ certificate_data.informant_name }}</td></tr>
+                                <tr><th>Informant Relation</th><td>{{ certificate_data.informant_relation }}</td></tr>
+                                <tr>
+                                    <th>Documents</th>
+                                    <td>
+                                        {% if certificate_data.hospital_certificate %}
+                                        <a href="{{ certificate_data.hospital_certificate.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">Hospital Certificate</a>
+                                        {% endif %}
+                                        <a href="{{ certificate_data.deceased_id_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">ID Proof</a>
+                                    </td>
+                                </tr>
+                            {% elif application.application_type == 'income_certificate' %}
+                                <tr><th>Applicant Name</th><td>{{ certificate_data.applicant_name }}</td></tr>
+                                <tr><th>Father/Husband Name</th><td>{{ certificate_data.father_husband_name }}</td></tr>
+                                <tr><th>Occupation</th><td>{{ certificate_data.occupation }}</td></tr>
+                                <tr><th>Annual Income</th><td>₹{{ certificate_data.annual_income }}</td></tr>
+                                <tr><th>Income Source</th><td>{{ certificate_data.get_income_source_display }}</td></tr>
+                                <tr><th>Income Details</th><td>{{ certificate_data.income_details }}</td></tr>
+                                <tr><th>Purpose</th><td>{{ certificate_data.purpose_of_certificate }}</td></tr>
+                                <tr>
+                                    <th>Documents</th>
+                                    <td>
+                                        <a href="{{ certificate_data.income_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">Income Proof</a>
+                                        <a href="{{ certificate_data.id_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">ID Proof</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <!-- Review Form -->
+                    <h5 class="mb-3">Update Application Status</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>Update Application
+                            </button>
+                            <a href="{% url 'admin_applications' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Back to Applications
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

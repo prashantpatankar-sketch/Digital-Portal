@@ -1,0 +1,221 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block title %}Verify Email - OTP{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- OTP Verification Card -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center py-4">
+                    <i class="bi bi-envelope-check fs-1 mb-2"></i>
+                    <h3 class="mb-0">Email Verification</h3>
+                    <p class="mb-0 small">Please verify your email to activate your account</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Email Info -->
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        A 6-digit verification code has been sent to:<br>
+                        <strong>{{ email }}</strong>
+                    </div>
+                    
+                    <!-- OTP Form -->
+                    <form method="post" id="otpForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-shield-lock me-2"></i>Enter Verification Code
+                            </label>
+                            
+                            {{ form.otp_code }}
+                            
+                            {% if form.otp_code.errors %}
+                                <div class="text-danger small mt-2">
+                                    {{ form.otp_code.errors.0 }}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="form-text mt-2">
+                                <i class="bi bi-clock me-1"></i>
+                                Enter the 6-digit code sent to your email
+                            </div>
+                        </div>
+                        
+                        <!-- Attempts and Time Info -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <div class="text-muted small">Attempts Left</div>
+                                    <div class="fs-4 fw-bold text-primary">{{ attempts_left }}/3</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded text-center">
+                                    <div class="text-muted small">Time Remaining</div>
+                                    <div class="fs-4 fw-bold text-danger" id="timeRemaining">
+                                        {% if time_remaining > 0 %}
+                                            <span id="minutes">{{ minutes }}</span>:<span id="seconds">{{ seconds|stringformat:"02d" }}</span>
+                                        {% else %}
+                                            Expired
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <i class="bi bi-check-circle me-2"></i>Verify Email
+                        </button>
+                    </form>
+                    
+                    <!-- Resend OTP -->
+                    <div class="text-center">
+                        <p class="text-muted small mb-2">Didn't receive the code?</p>
+                        <form method="post" action="{% url 'resend_otp' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary btn-sm" id="resendBtn">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Resend Code
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Security Notice -->
+                    <div class="alert alert-warning mt-4 mb-0">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-shield-exclamation me-2"></i>Security Tips:
+                        </h6>
+                        <ul class="small mb-0">
+                            <li>Never share your OTP with anyone</li>
+                            <li>OTP is valid for 10 minutes only</li>
+                            <li>You have maximum 3 attempts per OTP</li>
+                            <li>Request a new OTP if expired</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-footer text-center bg-light">
+                    <a href="{% url 'login' %}" class="text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Timer -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus OTP input
+    const otpInput = document.querySelector('input[name="otp_code"]');
+    if (otpInput) {
+        otpInput.focus();
+    }
+    
+    // Countdown Timer
+    let timeRemaining = {{ time_remaining }};
+    
+    if (timeRemaining > 0) {
+        const timerInterval = setInterval(function() {
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('timeRemaining').innerHTML = '<span class="text-danger">Expired</span>';
+                return;
+            }
+            
+            timeRemaining--;
+            
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            
+            document.getElementById('timeRemaining').innerHTML = 
+                minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+        }, 1000);
+    }
+    
+    // OTP Input Formatting
+    if (otpInput) {
+        otpInput.addEventListener('input', function(e) {
+            // Remove non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 6 digits
+            if (this.value.length > 6) {
+                this.value = this.value.slice(0, 6);
+            }
+        });
+        
+        // Auto-submit on 6 digits
+        otpInput.addEventListener('input', function(e) {
+            if (this.value.length === 6) {
+                // Optional: Auto-submit form
+                // document.getElementById('otpForm').submit();
+            }
+        });
+    }
+    
+    // Resend button rate limiting
+    const resendBtn = document.getElementById('resendBtn');
+    if (resendBtn) {
+        resendBtn.addEventListener('click', function(e) {
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Sending...';
+            
+            // Re-enable after 60 seconds
+            setTimeout(function() {
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Resend Code';
+            }, 60000);
+        });
+    }
+});
+</script>
+
+<style>
+/* Custom OTP Input Styling */
+input[name="otp_code"] {
+    font-size: 2rem !important;
+    text-align: center;
+    letter-spacing: 0.5em;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    padding: 15px !important;
+}
+
+/* Card Animation */
+.card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse animation for timer when low */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.text-danger {
+    animation: pulse 1s infinite;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Application Details{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-text me-2"></i>Application Details
+                    </h4>
+                    <span class="badge badge-{{ application.status }} fs-6">
+                        {{ application.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Application Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Application Number:</strong></p>
+                            <p class="text-primary fs-5">{{ application.application_number }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Application Type:</strong></p>
+                            <p>{{ application.get_application_type_display }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Applied Date:</strong></p>
+                            <p>{{ application.applied_date|date:"d M, Y h:i A" }}</p>
+                        </div>
+                        {% if application.reviewed_date %}
+                        <div class="col-md-6">
+                            <p><strong>Reviewed Date:</strong></p>
+                            <p>{{ application.reviewed_date|date:"d M, Y h:i A" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if application.admin_remarks %}
+                    <div class="alert alert-info">
+                        <p class="mb-0"><strong>Admin Remarks:</strong></p>
+                        <p class="mb-0">{{ application.admin_remarks }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <!-- Certificate Specific Details -->
+                    {% if certificate_data %}
+                    <h5 class="mb-3">Application Details</h5>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            {% if application.application_type == 'birth_certificate' %}
+                                <tr>
+                                    <th>Child Name</th>
+                                    <td>{{ certificate_data.child_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date of Birth</th>
+                                    <td>{{ certificate_data.date_of_birth }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Father's Name</th>
+                                    <td>{{ certificate_data.father_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Mother's Name</th>
+                                    <td>{{ certificate_data.mother_name }}</td>
+                                </tr>
+                            {% elif application.application_type == 'death_certificate' %}
+                                <tr>
+                                    <th>Deceased Name</th>
+                                    <td>{{ certificate_data.deceased_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date of Death</th>
+                                    <td>{{ certificate_data.date_of_death }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Age</th>
+                                    <td>{{ certificate_data.deceased_age }} years</td>
+                                </tr>
+                            {% elif application.application_type == 'income_certificate' %}
+                                <tr>
+                                    <th>Applicant Name</th>
+                                    <td>{{ certificate_data.applicant_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Annual Income</th>
+                                    <td>₹{{ certificate_data.annual_income }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Occupation</th>
+                                    <td>{{ certificate_data.occupation }}</td>
+                                </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    
+                    {% if application.status == 'approved' and certificate_data.certificate_number %}
+                    <div class="alert alert-success mt-3">
+                        <p class="mb-1"><strong>Certificate Number:</strong> {{ certificate_data.certificate_number }}</p>
+                        <p class="mb-0"><strong>Issued Date:</strong> {{ certificate_data.issued_date }}</p>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        {% if application.status == 'approved' %}
+                        <a href="{% url 'download_certificate' application.id %}" class="btn btn-success btn-lg">
+                            <i class="bi bi-download me-2"></i>Download Certificate
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'my_applications' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Back to My Applications
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
