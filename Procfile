@@ -1,1 +1,1 @@
-web: gunicorn gram_panchayat.wsgi:application
+web: python manage.py migrate && gunicorn gram_panchayat.wsgi:application
