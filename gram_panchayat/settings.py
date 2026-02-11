@@ -20,8 +20,6 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-pro
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-
-tum hi atao kaise karu 
 ALLOWED_HOSTS = [
     host.strip()
     for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
