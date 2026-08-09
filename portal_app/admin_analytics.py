@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Count
+from django.db.models.functions import ExtractHour
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
@@ -147,15 +148,30 @@ def collect_admin_analytics():
     else:
         top_cert = 'No certificate requests yet'
 
-    hour_buckets = UserActivity.objects.extra(
-        select={'hour': 'HOUR(created_at)'}
-    ).values('hour').annotate(total=Count('id')).order_by('-total')
-
-    if hour_buckets:
-        peak_hour = int(hour_buckets[0]['hour'])
-        peak_label = f"{peak_hour:02d}:00 - {peak_hour:02d}:59"
-    else:
-        peak_label = 'Insufficient activity data'
+    try:
+        hour_buckets = (
+            UserActivity.objects
+            .annotate(hour=ExtractHour('created_at'))
+            .values('hour')
+            .annotate(total=Count('id'))
+            .order_by('-total')
+        )
+        if hour_buckets and hour_buckets[0].get('hour') is not None:
+            peak_hour = int(hour_buckets[0]['hour'])
+            peak_label = f"{peak_hour:02d}:00 - {peak_hour:02d}:59"
+        else:
+            peak_label = 'Insufficient activity data'
+    except Exception:
+        from collections import defaultdict
+        hour_counts = defaultdict(int)
+        for act in UserActivity.objects.values_list('created_at', flat=True):
+            if act:
+                hour_counts[act.hour] += 1
+        if hour_counts:
+            peak_hour = max(hour_counts, key=hour_counts.get)
+            peak_label = f"{peak_hour:02d}:00 - {peak_hour:02d}:59"
+        else:
+            peak_label = 'Insufficient activity data'
 
     insights = [
         f"User registrations changed by {_safe_percent_change(users_current, users_previous)}% this month.",

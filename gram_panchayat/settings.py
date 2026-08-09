@@ -98,9 +98,10 @@ else:
         import shutil
         tmp_db = Path('/tmp/db.sqlite3')
         orig_db = BASE_DIR / 'db.sqlite3'
-        if IS_VERCEL and orig_db.exists() and not tmp_db.exists():
+        if IS_VERCEL and orig_db.exists():
             try:
-                shutil.copy2(orig_db, tmp_db)
+                if not tmp_db.exists() or orig_db.stat().st_mtime > tmp_db.stat().st_mtime:
+                    shutil.copy2(orig_db, tmp_db)
             except Exception:
                 pass
         db_path = tmp_db if (IS_VERCEL and tmp_db.exists()) else orig_db
