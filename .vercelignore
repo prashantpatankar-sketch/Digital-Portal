@@ -1,0 +1,13 @@
+.venv/
+staticfiles/
+media/
+.git/
+__pycache__/
+*.pyc
+*.log
+scratch/
+cookies.txt
+delete_users_script.py
+test_admin_login.py
+Template/
+static/vendor/

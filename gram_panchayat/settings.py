@@ -85,31 +85,37 @@ WSGI_APPLICATION = 'gram_panchayat.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASE_URL = config('DATABASE_URL', default=None)
+IS_VERCEL = config('VERCEL', default=False, cast=bool) or 'VERCEL' in os.environ
 
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
 else:
-    DB_ENGINE = config('DB_ENGINE', default='mysql')
+    DB_ENGINE = config('DB_ENGINE', default='sqlite' if IS_VERCEL else 'mysql')
 
-    if DB_ENGINE != 'mysql':
-        raise ImproperlyConfigured('Only MySQL is supported. Set DB_ENGINE=mysql in .env')
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': config('DB_NAME', default='gram_panchayat_db'),
-            'USER': config('DB_USER', default='root'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='3306'),
-            'OPTIONS': {
-                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-                'charset': 'utf8mb4',
-            },
+    if DB_ENGINE == 'sqlite' or IS_VERCEL:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
         }
-    }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': config('DB_NAME', default='gram_panchayat_db'),
+                'USER': config('DB_USER', default='root'),
+                'PASSWORD': config('DB_PASSWORD', default=''),
+                'HOST': config('DB_HOST', default='localhost'),
+                'PORT': config('DB_PORT', default='3306'),
+                'OPTIONS': {
+                    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                    'charset': 'utf8mb4',
+                },
+            }
+        }
 
 # Custom User Model
 AUTH_USER_MODEL = 'portal_app.CustomUser'

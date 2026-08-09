@@ -2,6 +2,8 @@ from django.db import migrations
 
 
 def forwards(apps, schema_editor):
+  if schema_editor.connection.vendor != 'mysql':
+    return
   with schema_editor.connection.cursor() as cursor:
     cursor.execute("SHOW TABLES LIKE 'portal_app_notification'")
     if not cursor.fetchone():
