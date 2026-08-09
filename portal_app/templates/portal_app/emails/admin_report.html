@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; color: #1f2937; }
+    .wrap { max-width: 640px; margin: 0 auto; padding: 16px; }
+    .head { background: linear-gradient(135deg, #0f4c81, #1e7ba6); color: #fff; padding: 14px 16px; border-radius: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+    .kpi { border: 1px solid #dbe5f2; border-radius: 10px; padding: 10px; }
+    .muted { color: #64748b; font-size: 12px; }
+    ul { padding-left: 18px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h2 style="margin:0;">{{ period|title }} Admin Analytics Report</h2>
+      <p style="margin:8px 0 0; opacity:0.92;">Generated at {{ analytics.generated_at|date:"d M Y, H:i" }}</p>
+    </div>
+
+    <div class="grid">
+      <div class="kpi">
+        <div class="muted">Total Users</div>
+        <strong>{{ analytics.overview.total_users }}</strong>
+      </div>
+      <div class="kpi">
+        <div class="muted">Applications</div>
+        <strong>{{ analytics.overview.total_applications }}</strong>
+      </div>
+      <div class="kpi">
+        <div class="muted">Certificates Issued</div>
+        <strong>{{ analytics.overview.certificates_issued }}</strong>
+      </div>
+    </div>
+
+    <h4>AI Insights (Logic Based)</h4>
+    <ul>
+      {% for item in analytics.insights %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+
+    {% if triggered_by %}
+    <p class="muted">Triggered by: {{ triggered_by }}</p>
+    {% endif %}
+  </div>
+</body>
+</html>

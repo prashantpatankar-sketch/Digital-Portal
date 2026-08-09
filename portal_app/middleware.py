@@ -33,12 +33,9 @@ class RoleBasedAccessMiddleware(MiddlewareMixin):
         user_role = request.user.role
         
         # Define role-based access rules
-        admin_paths = [
+        management_paths = [
             '/admin-dashboard/',
-            '/admin/applications/',
-            '/admin/application/',
-            '/admin/complaints/',
-            '/admin/complaint/',
+            '/panel/',
         ]
         staff_paths = ['/staff-dashboard/', '/staff/applications/', '/staff/review/']
         citizen_paths = [
@@ -52,10 +49,10 @@ class RoleBasedAccessMiddleware(MiddlewareMixin):
             '/complaint/',
         ]
         
-        # Check admin routes
-        if any(path.startswith(admin_path) for admin_path in admin_paths):
-            if user_role != 'admin':
-                messages.error(request, "Access denied. Admin privileges required.")
+        # Check management routes (staff and admin)
+        if any(path.startswith(management_path) for management_path in management_paths):
+            if user_role not in ['staff', 'admin']:
+                messages.error(request, "Access denied. Staff or admin privileges required.")
                 return redirect('home')
         
         # Check staff routes

@@ -10,11 +10,16 @@ Contains all forms for:
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.password_validation import validate_password
+from django.utils.translation import gettext_lazy as _
+from datetime import date
+import re
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Div
 from .models import (
     CustomUser, BirthCertificate, DeathCertificate, 
-    IncomeCertificate, TaxPayment, Complaint, Application
+    IncomeCertificate, TaxPayment, Complaint, Application, BillRequest,
+    ElectricityBill, WaterBill, PropertyTaxRecord, PendingRegistration
 )
 
 
@@ -22,37 +27,309 @@ from .models import (
 # USER AUTHENTICATION FORMS
 # ============================================
 
-class CitizenRegistrationForm(UserCreationForm):
+class CitizenRegistrationForm(forms.Form):
     """
-    Citizen Registration Form with all required fields
+    Government-grade citizen registration form (OTP-first flow).
     """
-    
+
+    username = forms.CharField(
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Choose a username'),
+            'autocomplete': 'username',
+            'maxlength': '20',
+        })
+    )
+
+    name = forms.CharField(
+        max_length=255,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Enter your full name'),
+            'autocomplete': 'name',
+        })
+    )
+
+    gender = forms.ChoiceField(
+        choices=(
+            ('', 'Select gender'),
+            ('male', _('Male')),
+            ('female', _('Female')),
+            ('other', _('Other')),
+        ),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'form-select',
+        })
+    )
+
+    date_of_birth = forms.DateField(
+        required=True,
+        input_formats=['%d-%m-%Y', '%Y-%m-%d'],
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'text',
+            'placeholder': _('DD-MM-YYYY'),
+            'autocomplete': 'bday',
+            'data-max-date': date.today().strftime('%d-%m-%Y'),
+        })
+    )
+
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Enter email address'),
+            'autocomplete': 'email',
+        })
+    )
+
+    phone_number = forms.CharField(
+        required=True,
+        max_length=10,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('10-digit mobile number'),
+            'maxlength': '10',
+            'inputmode': 'numeric',
+            'autocomplete': 'tel-national',
+        })
+    )
+
+    address = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': _('House no, street, landmark, area'),
+            'autocomplete': 'street-address',
+        })
+    )
+
+    state = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('State'),
+            'autocomplete': 'address-level1',
+        })
+    )
+
+    district = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('District'),
+            'autocomplete': 'address-level2',
+        })
+    )
+
+    pincode = forms.CharField(
+        max_length=6,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('6-digit pincode'),
+            'maxlength': '6',
+            'inputmode': 'numeric',
+            'autocomplete': 'postal-code',
+        })
+    )
+
+    aadhar_number = forms.CharField(
+        max_length=12,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Optional 12-digit Aadhaar number'),
+            'maxlength': '12',
+            'inputmode': 'numeric',
+        })
+    )
+
+    profile_photo = forms.ImageField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*',
+        })
+    )
+
+    password1 = forms.CharField(
+        label=_('Password'),
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Create a password'),
+            'autocomplete': 'new-password',
+        })
+    )
+
+    password2 = forms.CharField(
+        label=_('Confirm Password'),
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': _('Confirm your password'),
+            'autocomplete': 'new-password',
+        })
+    )
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if len(name) < 2:
+            raise forms.ValidationError(_('Name must be at least 2 characters long.'))
+        return name
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        if not username:
+            raise forms.ValidationError(_('Username is required.'))
+        if not re.match(r'^[a-zA-Z0-9_]{4,20}$', username):
+            raise forms.ValidationError(_('Username must be 4-20 characters and contain only letters, numbers, and underscore.'))
+
+        if CustomUser.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError(_('This username is already taken.'))
+
+        # Block active pending registration collisions as well.
+        if PendingRegistration.objects.filter(username__iexact=username, is_verified=False).exists():
+            raise forms.ValidationError(_('This username is currently reserved. Please choose another one.'))
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError(_('This email is already registered.'))
+        if PendingRegistration.objects.filter(email__iexact=email, is_verified=False).exists():
+            raise forms.ValidationError(_('A pending registration already exists for this email. Please verify OTP or try again later.'))
+        return email
+
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number', '').strip()
+        if not phone.isdigit() or len(phone) != 10:
+            raise forms.ValidationError(_('Mobile number must be exactly 10 digits.'))
+        if not phone.startswith(('6', '7', '8', '9')):
+            raise forms.ValidationError(_('Mobile number must start with 6, 7, 8, or 9.'))
+        if CustomUser.objects.filter(phone_number=phone).exists():
+            raise forms.ValidationError(_('This mobile number is already registered.'))
+        return phone
+
+    def clean_pincode(self):
+        pincode = self.cleaned_data.get('pincode', '').strip()
+        if not pincode.isdigit() or len(pincode) != 6:
+            raise forms.ValidationError(_('Pincode must be exactly 6 digits.'))
+        return pincode
+
+    def clean_aadhar_number(self):
+        aadhar_number = self.cleaned_data.get('aadhar_number', '').strip()
+        if not aadhar_number:
+            return ''
+        if not aadhar_number.isdigit() or len(aadhar_number) != 12:
+            raise forms.ValidationError(_('Aadhaar number must be exactly 12 digits.'))
+        if CustomUser.objects.filter(aadhar_number=aadhar_number).exists():
+            raise forms.ValidationError(_('This Aadhaar number is already registered.'))
+        return aadhar_number
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get('date_of_birth')
+        if not dob:
+            return dob
+
+        today = date.today()
+        if dob >= today:
+            raise forms.ValidationError(_('Date of birth must be in the past.'))
+
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        if age < 18:
+            raise forms.ValidationError(_('You must be at least 18 years old to self-register.'))
+        return dob
+
+    def clean_profile_photo(self):
+        photo = self.cleaned_data.get('profile_photo')
+        if not photo:
+            return photo
+        if photo.size > 2 * 1024 * 1024:
+            raise forms.ValidationError(_('Profile photo must be less than 2MB.'))
+        return photo
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+
+        if password1 and password2 and password1 != password2:
+            self.add_error('password2', 'Passwords do not match.')
+
+        if password1:
+            validate_password(password1)
+
+        return cleaned_data
+
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1', '')
+        if len(password) < 8:
+            raise forms.ValidationError(_('Password must be at least 8 characters long.'))
+        return password
+
+    def get_pending_payload(self):
+        """Return normalized, validated payload for pending OTP registration."""
+        name = self.cleaned_data['name'].strip()
+        return {
+            'name': name,
+            'first_name': name.split()[0],
+            'last_name': ' '.join(name.split()[1:]) if len(name.split()) > 1 else '',
+            'email': self.cleaned_data['email'].strip().lower(),
+            'phone_number': self.cleaned_data['phone_number'].strip(),
+            'gender': self.cleaned_data['gender'],
+            'date_of_birth': self.cleaned_data['date_of_birth'],
+            'address': self.cleaned_data['address'].strip(),
+            'state': self.cleaned_data['state'].strip(),
+            'district': self.cleaned_data['district'].strip(),
+            'pincode': self.cleaned_data['pincode'].strip(),
+            'aadhar_number': self.cleaned_data.get('aadhar_number', '').strip(),
+            'profile_photo': self.cleaned_data.get('profile_photo'),
+            'raw_password': self.cleaned_data['password1'],
+            'username': self.cleaned_data['username'].strip(),
+        }
+
+
+class StaffCreationForm(UserCreationForm):
+    """
+    Staff creation form for admins only
+    """
+
     first_name = forms.CharField(
         max_length=150,
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter first name'
+            'placeholder': 'First name'
         })
     )
-    
+
     last_name = forms.CharField(
         max_length=150,
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter last name'
+            'placeholder': 'Last name'
         })
     )
-    
+
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter email address'
+            'placeholder': 'Email address'
         })
     )
-    
+
     phone_number = forms.CharField(
         max_length=10,
         required=True,
@@ -61,7 +338,7 @@ class CitizenRegistrationForm(UserCreationForm):
             'placeholder': '10-digit mobile number'
         })
     )
-    
+
     aadhar_number = forms.CharField(
         max_length=12,
         required=False,
@@ -70,7 +347,7 @@ class CitizenRegistrationForm(UserCreationForm):
             'placeholder': '12-digit Aadhar number'
         })
     )
-    
+
     date_of_birth = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={
@@ -78,7 +355,7 @@ class CitizenRegistrationForm(UserCreationForm):
             'type': 'date'
         })
     )
-    
+
     address = forms.CharField(
         widget=forms.Textarea(attrs={
             'class': 'form-control',
@@ -86,7 +363,7 @@ class CitizenRegistrationForm(UserCreationForm):
             'placeholder': 'Complete address'
         })
     )
-    
+
     village = forms.CharField(
         max_length=100,
         widget=forms.TextInput(attrs={
@@ -94,7 +371,7 @@ class CitizenRegistrationForm(UserCreationForm):
             'placeholder': 'Village name'
         })
     )
-    
+
     pincode = forms.CharField(
         max_length=6,
         widget=forms.TextInput(attrs={
@@ -102,49 +379,22 @@ class CitizenRegistrationForm(UserCreationForm):
             'placeholder': '6-digit pincode'
         })
     )
-    
-    role = forms.ChoiceField(
-        choices=CustomUser.ROLE_CHOICES,
-        required=True,
-        initial='citizen',
-        widget=forms.Select(attrs={
-            'class': 'form-select'
-        }),
-        help_text='Select your role. Note: Admin and Staff roles require approval.'
-    )
-    
+
     class Meta:
         model = CustomUser
         fields = [
             'username', 'first_name', 'last_name', 'email',
             'phone_number', 'aadhar_number', 'date_of_birth',
-            'address', 'village', 'pincode', 'role', 'password1', 'password2'
+            'address', 'village', 'pincode', 'password1', 'password2'
         ]
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Choose a username'
-        })
-        self.fields['password1'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Enter password (min 8 characters)'
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Confirm password'
-        })
-    
+
     def clean_email(self):
-        """Ensure email is unique"""
         email = self.cleaned_data.get('email')
         if CustomUser.objects.filter(email=email).exists():
             raise forms.ValidationError("This email is already registered.")
         return email
-    
+
     def clean_phone_number(self):
-        """Ensure phone number is unique and valid"""
         phone = self.cleaned_data.get('phone_number')
         if CustomUser.objects.filter(phone_number=phone).exists():
             raise forms.ValidationError("This phone number is already registered.")
@@ -153,9 +403,8 @@ class CitizenRegistrationForm(UserCreationForm):
         if not phone.startswith(('6', '7', '8', '9')):
             raise forms.ValidationError("Phone number must start with 6, 7, 8, or 9.")
         return phone
-    
+
     def clean_aadhar_number(self):
-        """Ensure Aadhar is unique if provided"""
         aadhar = self.cleaned_data.get('aadhar_number')
         if aadhar:
             if not aadhar.isdigit() or len(aadhar) != 12:
@@ -163,23 +412,281 @@ class CitizenRegistrationForm(UserCreationForm):
             if CustomUser.objects.filter(aadhar_number=aadhar).exists():
                 raise forms.ValidationError("This Aadhar number is already registered.")
         return aadhar
-    
+
     def clean_pincode(self):
-        """Validate pincode format"""
         pincode = self.cleaned_data.get('pincode')
         if pincode:
             if not pincode.isdigit() or len(pincode) != 6:
                 raise forms.ValidationError("Pincode must be exactly 6 digits.")
         return pincode
-    
+
     def clean_username(self):
-        """Validate username - allows letters, numbers, @, dot, +, -, underscore"""
         import re
         username = self.cleaned_data.get('username')
-        # Allow alphanumeric, @, dot, plus, minus, underscore
         if not re.match(r'^[\w.@+-]+$', username):
             raise forms.ValidationError("Username can only contain letters, numbers, @, dot, plus, minus, and underscore.")
         return username
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = 'staff'
+        user.is_active = True
+        user.email_verified = True
+        user.is_staff = True
+        user.is_superuser = False
+        if commit:
+            user.save()
+        return user
+
+
+class UserSettingsForm(forms.ModelForm):
+    """Profile settings form for citizen and staff users."""
+
+    class Meta:
+        model = CustomUser
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'profile_photo']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email address'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '10-digit mobile number'}),
+            'profile_photo': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip()
+        if not email:
+            raise forms.ValidationError('Email is required.')
+
+        qs = CustomUser.objects.filter(email__iexact=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('This email is already registered.')
+        return email
+
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get('phone_number', '').strip()
+        if not phone.isdigit() or len(phone) != 10:
+            raise forms.ValidationError('Phone number must be exactly 10 digits.')
+
+        qs = CustomUser.objects.filter(phone_number=phone)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError('This phone number is already registered.')
+        return phone
+
+
+class AdminUserForm(forms.ModelForm):
+    """Admin form for editing general users."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'role' in self.fields:
+            self.fields['role'].choices = [
+                ('citizen', 'Citizen'),
+                ('staff', 'Panchayat Staff'),
+            ]
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            'username', 'first_name', 'last_name', 'email', 'phone_number',
+            'address', 'village', 'taluka', 'district', 'state', 'pincode',
+            'profile_photo', 'role', 'is_active',
+        ]
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'village': forms.TextInput(attrs={'class': 'form-control'}),
+            'taluka': forms.TextInput(attrs={'class': 'form-control'}),
+            'district': forms.TextInput(attrs={'class': 'form-control'}),
+            'state': forms.TextInput(attrs={'class': 'form-control'}),
+            'pincode': forms.TextInput(attrs={'class': 'form-control'}),
+            'profile_photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'role': forms.Select(attrs={'class': 'form-select'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        if len(username) < 4 or len(username) > 20:
+            raise forms.ValidationError('Username must be 4-20 characters long.')
+
+        if not username.replace('_', '').replace('-', '').isalnum():
+            raise forms.ValidationError('Username can only contain letters, numbers, and underscore.')
+
+        existing = CustomUser.objects.filter(username=username)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError('This username is already taken.')
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        existing = CustomUser.objects.filter(email__iexact=email)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError('This email is already registered.')
+
+        return email
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number', '').strip()
+        existing = CustomUser.objects.filter(phone_number=phone_number)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError('This phone number is already registered.')
+
+        return phone_number
+
+    def clean_role(self):
+        role = self.cleaned_data.get('role', 'citizen')
+        if role not in ['citizen', 'staff']:
+            raise forms.ValidationError('Invalid role selected.')
+
+        return role
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = self.cleaned_data.get('role', user.role)
+        user.is_active = self.cleaned_data.get('is_active', user.is_active)
+
+        if user.role == 'staff':
+            user.is_staff = True
+            user.is_superuser = False
+        elif user.role == 'citizen':
+            user.is_staff = False
+            user.is_superuser = False
+
+        if commit:
+            user.save()
+        return user
+
+
+class AccountDeleteForm(forms.Form):
+    confirmation = forms.CharField(
+        label='Type DELETE to confirm',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'DELETE'
+        })
+    )
+
+    def clean_confirmation(self):
+        confirmation = self.cleaned_data.get('confirmation', '').strip().upper()
+        if confirmation != 'DELETE':
+            raise forms.ValidationError('Please type DELETE to confirm account deletion.')
+        return confirmation
+
+
+class UserPasswordChangeForm(forms.Form):
+    current_password = forms.CharField(
+        label='Current Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter current password',
+            'autocomplete': 'current-password'
+        })
+    )
+    new_password1 = forms.CharField(
+        label='New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password'
+        })
+    )
+    new_password2 = forms.CharField(
+        label='Confirm New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password'
+        })
+    )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+    def clean_current_password(self):
+        current_password = self.cleaned_data.get('current_password')
+        if not self.user or not self.user.check_password(current_password):
+            raise forms.ValidationError('Current password is incorrect.')
+        return current_password
+
+    def clean_new_password1(self):
+        password = self.cleaned_data.get('new_password1')
+        validate_password(password, self.user)
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('new_password1')
+        password2 = cleaned_data.get('new_password2')
+
+        if password1 and password2 and password1 != password2:
+            self.add_error('new_password2', 'New passwords do not match.')
+
+        if password1 and cleaned_data.get('current_password') and password1 == cleaned_data.get('current_password'):
+            self.add_error('new_password1', 'New password must be different from current password.')
+
+        return cleaned_data
+
+
+class ForgotPasswordRequestForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Enter your registered email address',
+            'autocomplete': 'email'
+        })
+    )
+
+
+class PasswordResetForm(forms.Form):
+    new_password1 = forms.CharField(
+        label='New Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Enter new password',
+            'autocomplete': 'new-password'
+        })
+    )
+    new_password2 = forms.CharField(
+        label='Confirm Password',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-lg',
+            'placeholder': 'Confirm new password',
+            'autocomplete': 'new-password'
+        })
+    )
+
+    def clean_new_password1(self):
+        password = self.cleaned_data.get('new_password1')
+        validate_password(password)
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('new_password1')
+        password2 = cleaned_data.get('new_password2')
+        if password1 and password2 and password1 != password2:
+            self.add_error('new_password2', 'Passwords do not match.')
+        return cleaned_data
 
 
 class UserLoginForm(AuthenticationForm):
@@ -190,14 +697,14 @@ class UserLoginForm(AuthenticationForm):
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Username or Email'
+            'placeholder': _('Username or Email')
         })
     )
     
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Password'
+            'placeholder': _('Password')
         })
     )
 
@@ -527,6 +1034,97 @@ class ComplaintForm(forms.ModelForm):
         }
 
 
+class BillRequestForm(forms.ModelForm):
+    """Form to submit bill-related service requests."""
+
+    class Meta:
+        model = BillRequest
+        fields = [
+            'request_type',
+            'account_or_consumer_number',
+            'subject',
+            'details',
+            'attachment',
+        ]
+        widgets = {
+            'request_type': forms.Select(attrs={'class': 'form-select'}),
+            'account_or_consumer_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Consumer / account / property number'
+            }),
+            'subject': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Request subject'
+            }),
+            'details': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describe your bill-related request in detail'
+            }),
+            'attachment': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png'
+            }),
+        }
+
+
+# ============================================
+# ELECTRICITY / WATER / PROPERTY TAX FORMS
+# ============================================
+
+class ElectricityBillLookupForm(forms.Form):
+    consumer_number = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter consumer number'
+        })
+    )
+
+
+class WaterBillLookupForm(forms.Form):
+    connection_number = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter water connection number'
+        })
+    )
+
+
+class PropertyTaxRecordForm(forms.ModelForm):
+    class Meta:
+        model = PropertyTaxRecord
+        fields = [
+            'property_number',
+            'owner_name',
+            'property_address',
+            'property_type',
+            'built_up_area_sqft',
+            'tax_rate_per_sqft',
+            'tax_year',
+            'due_date',
+        ]
+        widgets = {
+            'property_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Property/House number'}),
+            'owner_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Owner full name'}),
+            'property_address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Property address'}),
+            'property_type': forms.Select(attrs={'class': 'form-select'}),
+            'built_up_area_sqft': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Built-up area in sq ft'}),
+            'tax_rate_per_sqft': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Rate per sq ft'}),
+            'tax_year': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., 2025-26'}),
+            'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+
+    def clean_tax_year(self):
+        tax_year = self.cleaned_data.get('tax_year', '').strip()
+        if len(tax_year) != 7 or '-' not in tax_year:
+            raise forms.ValidationError('Tax year must be in format YYYY-YY (e.g., 2025-26).')
+        return tax_year
+
+
 # ============================================
 # ADMIN FORMS
 # ============================================
@@ -567,6 +1165,202 @@ class ComplaintUpdateForm(forms.ModelForm):
                 'placeholder': 'Resolution details'
             }),
         }
+
+
+# ============================================
+# ADMIN STAFF CREATION FORM
+# ============================================
+
+class StaffCreationForm(forms.ModelForm):
+    """
+    Admin-only form for creating Staff accounts
+    """
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter temporary password'
+        }),
+        required=True
+    )
+    
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm password'
+        }),
+        required=True
+    )
+    
+    class Meta:
+        model = CustomUser
+        fields = [
+            'username', 'first_name', 'last_name', 'email',
+            'phone_number', 'password', 'confirm_password'
+        ]
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Username (4-20 characters, letters/numbers/_ only)'
+        })
+        self.fields['first_name'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'First name'
+        })
+        self.fields['last_name'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Last name'
+        })
+        self.fields['email'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Email address'
+        })
+        self.fields['phone_number'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': '10-digit mobile number'
+        })
+    
+    def clean_username(self):
+        """Validate username with strict rules"""
+        username = self.cleaned_data.get('username')
+        
+        # Length validation
+        if len(username) < 4 or len(username) > 20:
+            raise forms.ValidationError("Username must be 4-20 characters long.")
+        
+        # Character validation - only letters, numbers, and underscore
+        if not username.replace('_', '').replace('-', '').isalnum():
+            raise forms.ValidationError("Username can only contain letters, numbers, and underscore.")
+        
+        # No spaces
+        if ' ' in username:
+            raise forms.ValidationError("Username cannot contain spaces.")
+        
+        # Check uniqueness
+        if CustomUser.objects.filter(username=username).exists():
+            raise forms.ValidationError("This username is already taken.")
+        
+        return username
+    
+    def clean_email(self):
+        """Ensure email is unique"""
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered.")
+        return email
+    
+    def clean_phone_number(self):
+        """Ensure phone number is unique and valid"""
+        phone = self.cleaned_data.get('phone_number')
+        if CustomUser.objects.filter(phone_number=phone).exists():
+            raise forms.ValidationError("This phone number is already registered.")
+        if not phone.isdigit() or len(phone) != 10:
+            raise forms.ValidationError("Phone number must be exactly 10 digits.")
+        if not phone.startswith(('6', '7', '8', '9')):
+            raise forms.ValidationError("Phone number must start with 6, 7, 8, or 9.")
+        return phone
+    
+    def clean(self):
+        """Validate password confirmation"""
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if password and confirm_password and password != confirm_password:
+            raise forms.ValidationError("Passwords do not match.")
+        
+        if password and len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long.")
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        """Save staff user with staff role"""
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        user.role = 'staff'  # Force staff role
+        user.is_staff = True  # Django staff permission
+        user.is_superuser = False
+        user.is_active = self.cleaned_data.get('is_active', True)
+        if commit:
+            user.save()
+        return user
+
+
+class StaffManagementForm(forms.ModelForm):
+    """Edit form for existing staff accounts."""
+
+    class Meta:
+        model = CustomUser
+        fields = [
+            'username', 'first_name', 'last_name', 'email', 'phone_number',
+            'address', 'village', 'taluka', 'district', 'state', 'pincode',
+            'profile_photo', 'is_active',
+        ]
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'village': forms.TextInput(attrs={'class': 'form-control'}),
+            'taluka': forms.TextInput(attrs={'class': 'form-control'}),
+            'district': forms.TextInput(attrs={'class': 'form-control'}),
+            'state': forms.TextInput(attrs={'class': 'form-control'}),
+            'pincode': forms.TextInput(attrs={'class': 'form-control'}),
+            'profile_photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        if len(username) < 4 or len(username) > 20:
+            raise forms.ValidationError('Username must be 4-20 characters long.')
+
+        if not username.replace('_', '').replace('-', '').isalnum():
+            raise forms.ValidationError('Username can only contain letters, numbers, and underscore.')
+
+        existing = CustomUser.objects.filter(username=username)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError('This username is already taken.')
+
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        existing = CustomUser.objects.filter(email__iexact=email)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError('This email is already registered.')
+
+        return email
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number', '').strip()
+        existing = CustomUser.objects.filter(phone_number=phone_number)
+        if self.instance.pk:
+            existing = existing.exclude(pk=self.instance.pk)
+
+        if existing.exists():
+            raise forms.ValidationError('This phone number is already registered.')
+
+        return phone_number
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = 'staff'
+        user.is_staff = True
+        user.is_superuser = False
+        if commit:
+            user.save()
+        return user
 
 
 # ============================================

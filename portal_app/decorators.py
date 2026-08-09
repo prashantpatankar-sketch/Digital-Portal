@@ -11,7 +11,24 @@ Custom decorators to protect views based on user roles:
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+
+def _has_role(user, allowed_roles):
+    """Return True when the authenticated user matches one of the allowed portal roles."""
+    if not getattr(user, 'is_authenticated', False):
+        return False
+
+    if 'admin' in allowed_roles and user.is_superuser:
+        return True
+
+    if 'staff' in allowed_roles and user.is_staff and not user.is_superuser:
+        return True
+
+    if 'citizen' in allowed_roles and not user.is_staff and not user.is_superuser:
+        return True
+
+    return False
 
 
 def role_required(allowed_roles):
@@ -37,19 +54,11 @@ def role_required(allowed_roles):
     
     def decorator(view_func):
         @wraps(view_func)
-        @login_required
+        @login_required(login_url='login')
+        @user_passes_test(lambda user: _has_role(user, allowed_roles), login_url='access_denied')
         def wrapper(request, *args, **kwargs):
-            user_role = request.user.role
-            
-            if user_role in allowed_roles:
-                return view_func(request, *args, **kwargs)
-            else:
-                messages.error(
-                    request,
-                    f"Access denied. This page requires {', '.join(allowed_roles)} role."
-                )
-                return redirect('home')
-        
+            return view_func(request, *args, **kwargs)
+
         return wrapper
     return decorator
 

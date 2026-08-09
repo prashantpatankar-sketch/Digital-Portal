@@ -1,10 +1,19 @@
-{% extends 'portal_app/base.html' %}
+{% extends "portal_app/dashboard/base.html" %}
 {% load crispy_forms_tags %}
 
 {% block title %}Review Application{% endblock %}
 
 {% block content %}
 <div class="container my-4">
+    <div class="page-hero mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h3 class="fw-bold mb-1">Review Application</h3>
+                <p class="text-muted mb-0">Verify documents and update status for this application.</p>
+            </div>
+            <span class="badge bg-primary">Admin Panel</span>
+        </div>
+    </div>
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <div class="card">
@@ -106,6 +115,30 @@
                                         <a href="{{ certificate_data.id_proof.url }}" target="_blank" class="btn btn-sm btn-outline-primary">ID Proof</a>
                                     </td>
                                 </tr>
+                            {% elif application.application_type == 'complaint_submission' %}
+                                <tr><th>Complaint Number</th><td>{{ certificate_data.complaint_number }}</td></tr>
+                                <tr><th>Category</th><td>{{ certificate_data.get_category_display }}</td></tr>
+                                <tr><th>Subject</th><td>{{ certificate_data.subject }}</td></tr>
+                                <tr><th>Description</th><td>{{ certificate_data.description }}</td></tr>
+                                <tr><th>Location</th><td>{{ certificate_data.location }}</td></tr>
+                                <tr><th>Priority</th><td>{{ certificate_data.get_priority_display }}</td></tr>
+                                {% if certificate_data.complaint_photo %}
+                                <tr>
+                                    <th>Photo</th>
+                                    <td><a href="{{ certificate_data.complaint_photo.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View Photo</a></td>
+                                </tr>
+                                {% endif %}
+                            {% elif application.application_type == 'bill_request' %}
+                                <tr><th>Request Type</th><td>{{ certificate_data.get_request_type_display }}</td></tr>
+                                <tr><th>Reference Number</th><td>{{ certificate_data.account_or_consumer_number }}</td></tr>
+                                <tr><th>Subject</th><td>{{ certificate_data.subject }}</td></tr>
+                                <tr><th>Details</th><td>{{ certificate_data.details }}</td></tr>
+                                {% if certificate_data.attachment %}
+                                <tr>
+                                    <th>Attachment</th>
+                                    <td><a href="{{ certificate_data.attachment.url }}" target="_blank" class="btn btn-sm btn-outline-primary">View Attachment</a></td>
+                                </tr>
+                                {% endif %}
                             {% endif %}
                         </table>
                     </div>

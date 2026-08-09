@@ -1,28 +1,30 @@
+{% load static i18n i18n_extras %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Digital Gram Panchayat Portal{% endblock %}</title>
+    <title>{% block title %}{% trans "Digital Gram Panchayat Portal" %}{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap">
     
-    <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #1a237e;
-            --secondary-color: #283593;
-            --accent-color: #ff6f00;
-            --success-color: #2e7d32;
-            --warning-color: #f57c00;
-            --danger-color: #c62828;
-            --light-bg: #f8f9fa;
-            --card-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.15);
+            --primary-color: #0f4c81;
+            --secondary-color: #123d6a;
+            --accent-color: #ff8a00;
+            --success-color: #1b6b3a;
+            --warning-color: #c05600;
+            --danger-color: #b42318;
+            --light-bg: #f4f7fb;
+            --card-shadow: 0 12px 28px rgba(15, 76, 129, 0.12);
+            --card-shadow-hover: 0 18px 40px rgba(15, 76, 129, 0.2);
         }
         
         * {
@@ -32,11 +34,16 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Public Sans', 'Segoe UI', sans-serif;
             background-color: var(--light-bg);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            color: #1f2937;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
         
         main {
@@ -45,15 +52,20 @@
         
         /* Navigation */
         .navbar {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            padding: 1rem 0;
+            background: #0f4c81;
+            box-shadow: 0 10px 30px rgba(15, 76, 129, 0.25);
+            padding: 0.9rem 0;
+            border-bottom: 3px solid var(--accent-color);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
         }
         
         .navbar-brand {
             font-weight: 700;
-            font-size: 1.4rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
         }
         
         .navbar-brand:hover {
@@ -86,6 +98,112 @@
         .nav-link:hover::after {
             width: 80%;
         }
+
+        .language-switcher {
+            position: relative;
+        }
+
+        .language-switcher-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 999px;
+            padding: 0.35rem 0.8rem;
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            box-shadow: 0 8px 20px rgba(8, 34, 64, 0.12);
+        }
+
+        .language-switcher-trigger:hover,
+        .language-switcher-trigger:focus {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.42);
+        }
+
+        .language-switcher-trigger::after {
+            margin-left: 0.15rem;
+        }
+
+        .language-pill {
+            width: 1.45rem;
+            height: 1.45rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.16);
+            font-size: 0.84rem;
+            flex: 0 0 auto;
+        }
+
+        .language-menu {
+            min-width: 220px;
+            border: 0;
+            border-radius: 18px;
+            padding: 0.55rem;
+            margin-top: 0.65rem;
+            background: rgba(12, 34, 66, 0.96);
+            box-shadow: 0 20px 38px rgba(9, 20, 42, 0.22);
+            backdrop-filter: blur(14px);
+        }
+
+        .language-option {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border: 0;
+            border-radius: 14px;
+            padding: 0.78rem 0.85rem;
+            background: transparent;
+            color: #f8fafc;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .language-option:hover,
+        .language-option.active {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(2px);
+        }
+
+        .language-option-main {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .language-option-label {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .language-option-label strong {
+            font-size: 0.9rem;
+        }
+
+        .language-option-label span {
+            font-size: 0.73rem;
+            color: rgba(248, 250, 252, 0.72);
+        }
+
+        .language-active-badge {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #0f4c81;
+            background: #ffffff;
+            border-radius: 999px;
+            padding: 0.22rem 0.55rem;
+            text-transform: uppercase;
+        }
         
         /* Buttons */
         .btn {
@@ -97,8 +215,8 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.3);
+            background: linear-gradient(135deg, var(--primary-color), #0d6efd);
+            box-shadow: 0 10px 20px rgba(15, 76, 129, 0.25);
         }
         
         .btn-primary:hover {
@@ -122,9 +240,9 @@
         /* Cards */
         .card {
             border: none;
-            border-radius: 15px;
+            border-radius: 16px;
             box-shadow: var(--card-shadow);
-            transition: all 0.4s ease;
+            transition: all 0.35s ease;
             overflow: hidden;
             background: white;
         }
@@ -135,8 +253,8 @@
         }
         
         .card-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+            background: linear-gradient(135deg, rgba(15, 76, 129, 0.08), rgba(255, 138, 0, 0.08));
+            color: #1f2937;
             font-weight: 600;
             border: none;
             padding: 1.25rem 1.5rem;
@@ -286,7 +404,9 @@
         
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background:
+                radial-gradient(circle at 10% 20%, rgba(255, 138, 0, 0.15), transparent 45%),
+                linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             padding: 5rem 0;
             position: relative;
@@ -308,6 +428,153 @@
         .hero-content {
             position: relative;
             z-index: 1;
+        }
+
+        .page-hero {
+            background: white;
+            border-radius: 18px;
+            padding: 1.75rem 2rem;
+            border: 1px solid rgba(15, 76, 129, 0.12);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-hero::after {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(255, 138, 0, 0.2), transparent 60%);
+            opacity: 0.7;
+        }
+
+        /* App Shell */
+        .portal-shell {
+            display: grid;
+            grid-template-columns: 290px minmax(0, 1fr);
+            gap: 1.5rem;
+            width: min(1600px, calc(100% - 2rem));
+            margin: 1.5rem auto 0;
+            align-items: start;
+        }
+
+        .portal-shell.no-sidebar {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .portal-sidebar {
+            position: sticky;
+            top: 96px;
+            align-self: start;
+        }
+
+        .sidebar-panel {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(15, 76, 129, 0.12);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .sidebar-panel-header {
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid rgba(15, 76, 129, 0.08);
+            background: linear-gradient(135deg, rgba(15, 76, 129, 0.08), rgba(255, 138, 0, 0.08));
+        }
+
+        .sidebar-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary-color);
+        }
+
+        .sidebar-panel h5 {
+            margin: 0.35rem 0 0;
+            font-weight: 700;
+            color: #102a43;
+        }
+
+        .sidebar-panel p {
+            margin: 0.35rem 0 0;
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+
+        .sidebar-nav {
+            padding: 0.85rem;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 0.9rem;
+            border-radius: 14px;
+            color: #334155;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-bottom: 0.35rem;
+        }
+
+        .sidebar-nav-link:hover,
+        .sidebar-nav-link.active {
+            background: linear-gradient(135deg, rgba(15, 76, 129, 0.12), rgba(255, 138, 0, 0.12));
+            color: var(--primary-color);
+            transform: translateX(3px);
+        }
+
+        .sidebar-nav-link i {
+            width: 1.15rem;
+            text-align: center;
+        }
+
+        .sidebar-meta {
+            padding: 0 0.95rem 1rem;
+        }
+
+        .sidebar-meta-card {
+            border-radius: 16px;
+            background: #f8fbff;
+            border: 1px solid rgba(15, 76, 129, 0.08);
+            padding: 0.9rem;
+        }
+
+        .sidebar-meta-label {
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+
+        .portal-content {
+            min-width: 0;
+        }
+
+        .portal-main {
+            min-height: 60vh;
+        }
+
+        @media (max-width: 991.98px) {
+            .portal-shell {
+                grid-template-columns: 1fr;
+                width: min(100%, calc(100% - 1rem));
+                margin-top: 1rem;
+            }
+
+            .portal-sidebar {
+                position: static;
+            }
         }
         
         /* Alerts */
@@ -345,7 +612,7 @@
         
         /* Footer */
         .footer {
-            background: linear-gradient(135deg, #1a237e, #283593);
+            background: #0f4c81;
             color: white;
             padding: 3rem 0 1rem;
             margin-top: auto;
@@ -379,7 +646,7 @@
         .form-control:focus,
         .form-select:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.15);
+            box-shadow: 0 0 0 0.2rem rgba(15, 76, 129, 0.15);
         }
         
         /* Login/Register Cards */
@@ -445,139 +712,728 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--secondary-color);
         }
+
+        /* Chatbot - fixed bottom-right */
+        #gpChatbotLauncher {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 9999;
+            width: 56px;
+            height: 56px;
+            border: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0f4c81, #123d6a);
+            color: #ffffff;
+            box-shadow: 0 12px 24px rgba(15, 76, 129, 0.35);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        #gpChatbotWindow {
+            position: fixed;
+            right: 20px;
+            bottom: 80px;
+            z-index: 9999;
+            width: 340px;
+            max-width: calc(100vw - 40px);
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 18px;
+            border: 1px solid rgba(15, 76, 129, 0.16);
+            box-shadow: 0 24px 44px rgba(15, 76, 129, 0.24);
+            overflow: hidden;
+            display: none;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            transform-origin: bottom right;
+        }
+
+        #gpChatbotWindow.is-open {
+            display: flex;
+            flex-direction: column;
+            animation: chatbotPop 180ms ease;
+        }
+
+        .gp-chat-header {
+            background: #0f4c81;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            font-weight: 600;
+        }
+
+        .gp-chat-close {
+            background: transparent;
+            border: 0;
+            color: #ffffff;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .gp-chat-messages {
+            height: 280px;
+            overflow-y: auto;
+            padding: 12px;
+            background: #f7f9fc;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .gp-chat-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 12px 0;
+            background: #f7f9fc;
+        }
+
+        .gp-chat-suggestion-label {
+            width: 100%;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .gp-chat-suggestion {
+            border: 1px solid rgba(15, 76, 129, 0.16);
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: #ffffff;
+            color: #0f4c81;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .gp-chat-suggestion:hover {
+            background: #0f4c81;
+            border-color: #0f4c81;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .gp-chat-suggestion:focus-visible {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.18);
+        }
+
+        .gp-chat-msg {
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .gp-chat-msg.user {
+            justify-content: flex-end;
+        }
+
+        .gp-chat-bubble {
+            max-width: 80%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            line-height: 1.35;
+            word-wrap: break-word;
+            white-space: pre-line;
+            position: relative;
+        }
+
+        .gp-chat-msg.user .gp-chat-bubble {
+            background: #0f4c81;
+            color: #ffffff;
+        }
+
+        .gp-chat-msg.bot .gp-chat-bubble {
+            background: #eaf1fb;
+            color: #1f2937;
+        }
+
+        .gp-chat-meta {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin-left: 2px;
+        }
+
+        .gp-chat-msg.user {
+            align-items: flex-end;
+        }
+
+        .gp-chat-msg.bot {
+            align-items: flex-start;
+        }
+
+        .gp-chat-msg.typing .gp-chat-bubble {
+            min-width: 58px;
+        }
+
+        .gp-chat-typing {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 18px;
+        }
+
+        .gp-chat-typing span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #0f4c81;
+            animation: typingBounce 1s infinite ease-in-out;
+        }
+
+        .gp-chat-typing span:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .gp-chat-typing span:nth-child(3) {
+            animation-delay: 0.24s;
+        }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+            40% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        @keyframes chatbotPop {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .gp-chat-input-row {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+        }
+
+        .gp-chat-input {
+            flex: 1;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 0.92rem;
+            outline: none;
+        }
+
+        .gp-chat-input:focus {
+            border-color: #0f4c81;
+            box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.12);
+        }
+
+        .gp-chat-send {
+            border: 0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: #0f4c81;
+            color: #ffffff;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 480px) {
+            #gpChatbotWindow {
+                width: min(340px, calc(100vw - 24px));
+                right: 12px;
+                bottom: 76px;
+            }
+
+            #gpChatbotLauncher {
+                right: 12px;
+                bottom: 12px;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="{% static 'portal_app/css/app.css' %}">
     
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body data-authenticated="{% if user.is_authenticated %}1{% else %}0{% endif %}" data-user-role="{% if user.is_authenticated %}{{ user.role }}{% else %}guest{% endif %}" data-user-name="{% if user.is_authenticated %}{{ user.first_name|default:user.username }}{% endif %}">
+    <div id="pageLoader" class="page-loader" aria-hidden="true">
+        <div class="loader-core"></div>
+    </div>
+
+    {% with current_url=request.resolver_match.url_name|default:'' %}
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="bi bi-bank2 me-2"></i>Digital Gram Panchayat
+                <i class="bi bi-bank2 me-2"></i>{% trans "Digital Gram Panchayat" %}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                <div class="ms-lg-3 me-lg-3 position-relative w-100" style="max-width: 360px;">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="search" id="smartSearchInput" class="form-control" placeholder="{% trans 'Search services, applications, complaints...' %}" autocomplete="off">
+                    </div>
+                    <div id="smartSearchResults" class="smart-search-results d-none"></div>
+                </div>
+                {% endif %}
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item me-lg-2 dropdown language-switcher">
+                        <form action="{% url 'set_language' %}" method="post" class="m-0" id="publicLanguageForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button class="btn language-switcher-trigger dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="language-pill">{% if request.LANGUAGE_CODE == 'hi' %}हि{% elif request.LANGUAGE_CODE == 'mr' %}मर{% else %}EN{% endif %}</span>
+                                <span>{% trans "Switch language" %}</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end language-menu">
+                                <button type="submit" class="language-option {% if request.LANGUAGE_CODE == 'en' %}active{% endif %}" name="language" value="en">
+                                    <span class="language-option-main">
+                                        <span class="language-pill">🇬🇧</span>
+                                        <span class="language-option-label">
+                                            <strong>English</strong>
+                                            <span>EN</span>
+                                        </span>
+                                    </span>
+                                    {% if request.LANGUAGE_CODE == 'en' %}<span class="language-active-badge">ON</span>{% endif %}
+                                </button>
+                                <button type="submit" class="language-option {% if request.LANGUAGE_CODE == 'hi' %}active{% endif %}" name="language" value="hi">
+                                    <span class="language-option-main">
+                                        <span class="language-pill">🇮🇳</span>
+                                        <span class="language-option-label">
+                                            <strong>हिंदी</strong>
+                                            <span>HI</span>
+                                        </span>
+                                    </span>
+                                    {% if request.LANGUAGE_CODE == 'hi' %}<span class="language-active-badge">ON</span>{% endif %}
+                                </button>
+                                <button type="submit" class="language-option {% if request.LANGUAGE_CODE == 'mr' %}active{% endif %}" name="language" value="mr">
+                                    <span class="language-option-main">
+                                        <span class="language-pill">🇮🇳</span>
+                                        <span class="language-option-label">
+                                            <strong>मराठी</strong>
+                                            <span>MR</span>
+                                        </span>
+                                    </span>
+                                    {% if request.LANGUAGE_CODE == 'mr' %}<span class="language-active-badge">ON</span>{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">
-                            <i class="bi bi-house-door me-1"></i>Home
+                        <a class="nav-link{% if current_url == 'home' %} active{% endif %}" href="{% url 'home' %}">
+                            <i class="bi bi-house-door me-1"></i>{% trans "Home" %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'services' %}">
-                            <i class="bi bi-grid-3x3-gap me-1"></i>Services
+                        <a class="nav-link{% if current_url == 'services' %} active{% endif %}" href="{% url 'services' %}">
+                            <i class="bi bi-grid-3x3-gap me-1"></i>{% trans "Services" %}
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'track_application' %}">
-                            <i class="bi bi-search me-1"></i>Track Application
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}">
-                            <i class="bi bi-info-circle me-1"></i>About
-                        </a>
-                    </li>
-                    
                     {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle me-1"></i>{{ user.first_name|default:user.username }}
+                        <li class="nav-item">
+                            <a class="nav-link{% if current_url == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2 me-1"></i>{% trans "Dashboard" %}
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'dashboard' %}">
-                                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                                    </a>
-                                </li>
-                                {% if user.is_staff or user.role == 'admin' %}
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'admin_dashboard' %}">
-                                        <i class="bi bi-shield-check me-2"></i>Admin Panel
-                                    </a>
-                                </li>
-                                {% endif %}
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'logout' %}">
-                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                                    </a>
-                                </li>
-                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{% if current_url == 'payments' %} active{% endif %}" href="{% url 'payments' %}">
+                                <i class="bi bi-cash-coin me-1"></i>{% trans "Payments" %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{% if current_url == 'profile' or current_url == 'account_profile' %} active{% endif %}" href="{% url 'profile' %}">
+                                <i class="bi bi-person-circle me-1"></i>{% trans "Profile" %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{% if current_url == 'notifications' or current_url == 'notifications_center' %} active{% endif %}" href="{% url 'notifications' %}">
+                                <i class="bi bi-bell me-1"></i>{% trans "Notifications" %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link{% if current_url == 'settings' or current_url == 'account_settings' %} active{% endif %}" href="{% url 'settings' %}">
+                                <i class="bi bi-gear me-1"></i>{% trans "Settings" %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right me-1"></i>{% trans "Logout" %}
+                            </a>
                         </li>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">
-                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                                <i class="bi bi-box-arrow-in-right me-1"></i>{% trans "Login" %}
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-outline-light btn-sm ms-2" href="{% url 'register' %}">
-                                Register
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus me-1"></i>{% trans "Register" %}
                             </a>
                         </li>
                     {% endif %}
+                    <li class="nav-item ms-lg-2">
+                        <button type="button" class="btn btn-sm btn-outline-light nav-theme-toggle" data-theme-toggle aria-label="{% trans 'Toggle dark mode' %}">
+                            <i class="bi bi-moon-stars-fill"></i>
+                        </button>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Messages -->
-    {% if messages %}
-        <div class="container mt-3">
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" id="toastStack" aria-live="polite" aria-atomic="true">
+        {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="toast gp-toast align-items-center text-bg-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4600" data-toast-type="{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %}">
+                    <div class="d-flex align-items-start">
+                        <div class="toast-body">
+                            <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}x-octagon-fill{% elif message.tags == 'warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
+                            {{ message|translate_text }}
+                        </div>
+                    </div>
+                    <div class="toast-progress"></div>
                 </div>
             {% endfor %}
-        </div>
-    {% endif %}
+        {% endif %}
+    </div>
 
-    <!-- Main Content -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <div class="portal-shell {% if not user.is_authenticated %}no-sidebar{% endif %}">
+        {% if user.is_authenticated %}
+        <aside class="portal-sidebar">
+            <div class="sidebar-panel">
+                <div class="sidebar-panel-header">
+                    <span class="sidebar-kicker"><i class="bi bi-shield-check"></i>{% trans "Government Portal" %}</span>
+                    <h5>{{ user.get_full_name|default:user.username }}</h5>
+                    <p>{{ user.role|default:'citizen'|title }} {% trans "account" %}</p>
+                </div>
+                <nav class="sidebar-nav" aria-label="Primary navigation">
+                    <a class="sidebar-nav-link{% if current_url == 'home' %} active{% endif %}" href="{% url 'home' %}"><i class="bi bi-house-door"></i><span>{% trans "Home" %}</span></a>
+                    <a class="sidebar-nav-link{% if current_url == 'services' %} active{% endif %}" href="{% url 'services' %}"><i class="bi bi-grid-3x3-gap"></i><span>{% trans "Services" %}</span></a>
+                    <a class="sidebar-nav-link{% if current_url == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}"><i class="bi bi-speedometer2"></i><span>{% trans "Dashboard" %}</span></a>
+                    <a class="sidebar-nav-link{% if current_url == 'payments' %} active{% endif %}" href="{% url 'payments' %}"><i class="bi bi-cash-coin"></i><span>{% trans "Payments" %}</span></a>
+                    <a class="sidebar-nav-link{% if current_url == 'profile' or current_url == 'account_profile' %} active{% endif %}" href="{% url 'profile' %}"><i class="bi bi-person-circle"></i><span>{% trans "Profile" %}</span></a>
+                    <a class="sidebar-nav-link{% if current_url == 'notifications' or current_url == 'notifications_center' %} active{% endif %}" href="{% url 'notifications' %}"><i class="bi bi-bell"></i><span>{% trans "Notifications" %}</span></a>
+                    <a class="sidebar-nav-link{% if current_url == 'settings' or current_url == 'account_settings' %} active{% endif %}" href="{% url 'settings' %}"><i class="bi bi-gear"></i><span>{% trans "Settings" %}</span></a>
+                    <a class="sidebar-nav-link" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i><span>{% trans "Logout" %}</span></a>
+                </nav>
+                <div class="sidebar-meta">
+                    <div class="sidebar-meta-card">
+                        <div class="sidebar-meta-label">{% trans "Current section" %}</div>
+                        <div class="fw-semibold text-dark">{% trans "Only one page loads at a time" %}</div>
+                        <div class="small text-muted mt-1">{% trans "Each menu item opens its own template." %}</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        {% endif %}
+
+        <div class="portal-content">
+            <main class="portal-main">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% endwith %}
 
     <!-- Footer -->
     <footer class="footer mt-5">
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5><i class="bi bi-bank2 me-2"></i>Digital Gram Panchayat</h5>
-                    <p class="text-white-50">Empowering rural governance through digital transformation.</p>
+                    <h5><i class="bi bi-bank2 me-2"></i>{% trans "Digital Gram Panchayat" %}</h5>
+                    <p class="text-white-50">{% trans "Empowering rural governance through digital transformation." %}</p>
                 </div>
                 <div class="col-md-4">
-                    <h5>Quick Links</h5>
+                    <h5>{% trans "Quick Links" %}</h5>
                     <ul class="list-unstyled">
-                        <li><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
-                        <li><a href="{% url 'services' %}" class="text-white-50 text-decoration-none">Services</a></li>
-                        <li><a href="{% url 'track_application' %}" class="text-white-50 text-decoration-none">Track Application</a></li>
-                        <li><a href="{% url 'about' %}" class="text-white-50 text-decoration-none">About Us</a></li>
+                        <li><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">{% trans "Home" %}</a></li>
+                        <li><a href="{% url 'services' %}" class="text-white-50 text-decoration-none">{% trans "Services" %}</a></li>
+                        <li><a href="{% url 'track_application' %}" class="text-white-50 text-decoration-none">{% trans "Track Application" %}</a></li>
+                        <li><a href="{% url 'about' %}" class="text-white-50 text-decoration-none">{% trans "About Us" %}</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
-                    <h5>Contact</h5>
+                    <h5>{% trans "Contact" %}</h5>
                     <p class="text-white-50">
                         <i class="bi bi-envelope me-2"></i>info@grampanchayat.gov.in<br>
                         <i class="bi bi-telephone me-2"></i>1800-XXX-XXXX<br>
-                        <i class="bi bi-geo-alt me-2"></i>Gram Panchayat Office
+                        <i class="bi bi-geo-alt me-2"></i>{% trans "Gram Panchayat Office" %}
                     </p>
                 </div>
             </div>
             <hr class="bg-white">
             <div class="text-center text-white-50">
-                <p>&copy; 2026 Digital Gram Panchayat Portal. All rights reserved.</p>
+                <p>&copy; 2026 {% trans "Digital Gram Panchayat Portal. All rights reserved." %}</p>
             </div>
         </div>
     </footer>
 
+    <button id="gpChatbotLauncher" type="button" aria-label="{% trans 'Open Help Desk' %}">
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
+
+    <section id="gpChatbotWindow" aria-label="{% trans 'Gram Panchayat Help Desk' %}" aria-hidden="true">
+        <div class="gp-chat-header">
+            <span>{% trans "Gram Panchayat Help Desk" %}</span>
+            <button id="gpChatbotClose" class="gp-chat-close" type="button" aria-label="{% trans 'Close Chat' %}">&times;</button>
+        </div>
+        <div id="gpChatMessages" class="gp-chat-messages"></div>
+        <div id="gpChatSuggestions" class="gp-chat-suggestions" aria-label="Chat suggestions"></div>
+        <div class="gp-chat-input-row">
+            <input id="gpChatInput" class="gp-chat-input" type="text" placeholder="{% trans 'Type your message...' %}" autocomplete="off">
+            <button id="gpChatSend" class="gp-chat-send" type="button">{% trans "Send" %}</button>
+        </div>
+    </section>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'portal_app/js/app.js' %}"></script>
+    <script>
+        (function () {
+            const launcher = document.getElementById('gpChatbotLauncher');
+            const chatbot = document.getElementById('gpChatbotWindow');
+            const closeBtn = document.getElementById('gpChatbotClose');
+            const messages = document.getElementById('gpChatMessages');
+            const suggestions = document.getElementById('gpChatSuggestions');
+            const input = document.getElementById('gpChatInput');
+            const sendBtn = document.getElementById('gpChatSend');
+            const languageForm = document.getElementById('publicLanguageForm');
+            const pageLoader = document.getElementById('pageLoader');
+            let typingNode = null;
+
+            if (languageForm) {
+                languageForm.addEventListener('submit', function () {
+                    document.body.style.transition = 'opacity 120ms ease';
+                    document.body.style.opacity = '0.78';
+                    if (pageLoader) {
+                        pageLoader.classList.add('active');
+                    }
+                });
+            }
+
+            const suggestionSets = {
+                welcome: ['{% trans "Apply Certificate" %}', '{% trans "Check Status" %}', '{% trans "Pay Bill" %}', '{% trans "Required Documents" %}'],
+                apply: ['{% trans "Apply Income Certificate" %}', '{% trans "Apply Birth Certificate" %}', '{% trans "Apply Death Certificate" %}'],
+                income: ['{% trans "Apply Now" %}', '{% trans "Required Documents" %}', '{% trans "Track Status" %}'],
+                complaint: ['{% trans "File Complaint" %}', '{% trans "Track Complaint" %}', '{% trans "Complaint Status" %}'],
+                bill: ['{% trans "Pay Electricity Bill" %}', '{% trans "Pay Water Bill" %}', '{% trans "Pay Property Tax" %}'],
+                status: ['{% trans "Track Application" %}', '{% trans "Track Complaint" %}', '{% trans "Check Certificate Status" %}'],
+                documents: ['{% trans "Required Documents" %}', '{% trans "Apply Certificate" %}', '{% trans "Track Application" %}']
+            };
+
+            function normalizeText(value) {
+                return String(value || '').trim();
+            }
+
+            function formatTimestamp(date) {
+                const value = date instanceof Date ? date : new Date();
+                return value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function renderSuggestions(items) {
+                suggestions.innerHTML = '';
+
+                if (!items || !items.length) {
+                    suggestions.hidden = true;
+                    return;
+                }
+
+                const label = document.createElement('div');
+                label.className = 'gp-chat-suggestion-label';
+                label.textContent = '{% trans "Quick Suggestions" %}';
+                suggestions.appendChild(label);
+
+                items.forEach((item) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'gp-chat-suggestion';
+                    button.textContent = item;
+                    button.addEventListener('click', function () {
+                        sendMessage(item);
+                    });
+                    suggestions.appendChild(button);
+                });
+
+                suggestions.hidden = false;
+            }
+
+            function getSuggestionsForMessage(text) {
+                const normalized = normalizeText(text).toLowerCase();
+
+                if (!normalized) {
+                    return suggestionSets.welcome;
+                }
+
+                if (normalized.includes('income certificate') || normalized.includes('income')) {
+                    return suggestionSets.income;
+                }
+
+                if (normalized.includes('complaint') || normalized.includes('grievance')) {
+                    return suggestionSets.complaint;
+                }
+
+                if (normalized.includes('bill') || normalized.includes('electricity') || normalized.includes('water')) {
+                    return suggestionSets.bill;
+                }
+
+                if (normalized.includes('status') || normalized.includes('track') || normalized.includes('application')) {
+                    return suggestionSets.status;
+                }
+
+                if (normalized.includes('apply') || normalized.includes('certificate')) {
+                    return suggestionSets.apply;
+                }
+
+                if (normalized.includes('document') || normalized.includes('papers') || normalized.includes('documents')) {
+                    return suggestionSets.documents;
+                }
+
+                return suggestionSets.welcome;
+            }
+
+            function getCsrfToken() {
+                const cookies = document.cookie ? document.cookie.split(';') : [];
+                for (let i = 0; i < cookies.length; i += 1) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith('csrftoken=')) {
+                        return decodeURIComponent(cookie.substring('csrftoken='.length));
+                    }
+                }
+                return '';
+            }
+
+            function appendMessage(kind, text, options) {
+                const metaText = options && options.timestamp ? options.timestamp : formatTimestamp();
+                const wrap = document.createElement('div');
+                wrap.className = 'gp-chat-msg ' + kind;
+
+                const bubble = document.createElement('div');
+                bubble.className = 'gp-chat-bubble';
+                bubble.textContent = text;
+
+                const meta = document.createElement('span');
+                meta.className = 'gp-chat-meta';
+                meta.textContent = metaText;
+
+                wrap.appendChild(bubble);
+                wrap.appendChild(meta);
+                messages.appendChild(wrap);
+                messages.scrollTop = messages.scrollHeight;
+                return wrap;
+            }
+
+            function showTypingIndicator() {
+                if (typingNode) {
+                    return typingNode;
+                }
+
+                const wrap = document.createElement('div');
+                wrap.className = 'gp-chat-msg bot typing';
+
+                const bubble = document.createElement('div');
+                bubble.className = 'gp-chat-bubble';
+
+                const typing = document.createElement('span');
+                typing.className = 'gp-chat-typing';
+                typing.innerHTML = '<span></span><span></span><span></span>';
+
+                bubble.appendChild(typing);
+                wrap.appendChild(bubble);
+                messages.appendChild(wrap);
+                messages.scrollTop = messages.scrollHeight;
+                typingNode = wrap;
+                return wrap;
+            }
+
+            function hideTypingIndicator() {
+                if (typingNode && typingNode.parentNode) {
+                    typingNode.parentNode.removeChild(typingNode);
+                }
+                typingNode = null;
+            }
+
+            function openChat() {
+                chatbot.classList.add('is-open');
+                chatbot.setAttribute('aria-hidden', 'false');
+                input.focus();
+            }
+
+            function closeChat() {
+                chatbot.classList.remove('is-open');
+                chatbot.setAttribute('aria-hidden', 'true');
+            }
+
+            async function sendMessage(messageText) {
+                const text = typeof messageText === 'string' ? messageText.trim() : input.value.trim();
+                if (!text) {
+                    return;
+                }
+
+                appendMessage('user', text);
+                input.value = '';
+                showTypingIndicator();
+
+                try {
+                    const response = await fetch('{% url "chatbot_api" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ message: text })
+                    });
+
+                    const data = await response.json();
+                    hideTypingIndicator();
+
+                    const suggestionList = Array.isArray(data.suggestions) && data.suggestions.length ? data.suggestions : getSuggestionsForMessage(text);
+                    renderSuggestions(suggestionList);
+
+                    if (!response.ok) {
+                        appendMessage('bot', data.reply || '{% trans "Unable to process your message right now." %}');
+                        return;
+                    }
+
+                    appendMessage('bot', data.reply || '{% trans "No response available." %}');
+                } catch (error) {
+                    hideTypingIndicator();
+                    renderSuggestions(getSuggestionsForMessage(text));
+                    appendMessage('bot', '{% trans "Network issue. Please try again." %}');
+                }
+            }
+
+            launcher.addEventListener('click', openChat);
+            closeBtn.addEventListener('click', closeChat);
+            sendBtn.addEventListener('click', sendMessage);
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            appendMessage('bot', '{% trans "Hello. I am your Help Desk assistant. How can I help you today?" %}');
+            renderSuggestions(suggestionSets.welcome);
+            closeChat();
+        })();
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

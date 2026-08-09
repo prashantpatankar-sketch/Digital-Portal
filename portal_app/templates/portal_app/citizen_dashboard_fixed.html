@@ -1,0 +1,231 @@
+{% extends 'portal_app/dashboard_base_fixed.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="welcome-banner mb-4">
+    <div class="welcome-copy">
+        <p class="welcome-eyebrow mb-1">Digital Grampanchayat Portal</p>
+        <h1 class="content-title mb-2">Welcome back, {{ request.user.first_name|default:request.user.username }} 👋</h1>
+        <p class="content-subtitle mb-0">Aaj ke tasks quickly complete karo: applications track karo, bills pay karo, aur grievances manage karo.</p>
+    </div>
+    <div class="welcome-actions">
+        <a href="{% url 'apply_income_certificate' %}" class="btn btn-light quick-head-btn">
+            <i class="fas fa-certificate me-2"></i>Apply Certificate
+        </a>
+        <a href="{% url 'electricity_bill_service' %}" class="btn btn-outline-light quick-head-btn">
+            <i class="fas fa-file-invoice-dollar me-2"></i>Pay Bill
+        </a>
+        <a href="{% url 'file_complaint' %}" class="btn btn-outline-light quick-head-btn">
+            <i class="fas fa-bullhorn me-2"></i>File Complaint
+        </a>
+    </div>
+    <div class="welcome-avatar" aria-hidden="true">
+        {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <article class="stat-modern-card stat-primary">
+            <div class="stat-modern-icon"><i class="fas fa-file-alt"></i></div>
+            <div>
+                <h3>{{ stats.total_applications }}</h3>
+                <p>Total Applications</p>
+            </div>
+        </article>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <article class="stat-modern-card stat-warning">
+            <div class="stat-modern-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div>
+                <h3>{{ stats.pending }}</h3>
+                <p>Pending Review</p>
+            </div>
+        </article>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <article class="stat-modern-card stat-success">
+            <div class="stat-modern-icon"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <h3>{{ stats.approved }}</h3>
+                <p>Approved</p>
+            </div>
+        </article>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <article class="stat-modern-card stat-danger">
+            <div class="stat-modern-icon"><i class="fas fa-times-circle"></i></div>
+            <div>
+                <h3>{{ stats.rejected }}</h3>
+                <p>Rejected</p>
+            </div>
+        </article>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="card modern-panel h-100" data-search-section="applications">
+            <div class="card-header panel-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-signature me-2"></i>Recent Applications</h5>
+                <a href="{% url 'my_applications' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_applications %}
+                    <div class="list-group list-group-flush">
+                        {% for app in recent_applications %}
+                        <a href="{% url 'application_detail' app.id %}" class="list-group-item app-row" data-search-item data-search-group="applications" data-search-text="{{ app.application_number }} {{ app.get_application_type_display }} {{ app.get_status_display }} {{ app.applied_date|date:'d M Y' }}">
+                            <div>
+                                <h6 class="mb-1">{{ app.application_number }}</h6>
+                                <small class="text-muted">{{ app.get_application_type_display }} • {{ app.applied_date|date:"d M Y" }}</small>
+                            </div>
+                            <span class="badge text-bg-{% if app.status == 'approved' %}success{% elif app.status == 'rejected' %}danger{% elif app.status == 'pending' %}warning{% else %}info{% endif %}">{{ app.get_status_display }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4 text-center">
+                        <i class="fas fa-folder-open fa-2x mb-2"></i>
+                        <h6 class="mb-1">No Applications Yet</h6>
+                        <p class="text-muted small mb-0">Start with a certificate request from quick actions below.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="card modern-panel h-100" data-search-section="complaints">
+            <div class="card-header panel-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Recent Complaints</h5>
+                <a href="{% url 'my_complaints' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if complaints %}
+                    <div class="list-group list-group-flush">
+                        {% for complaint in complaints %}
+                        <a href="{% url 'complaint_detail' complaint.id %}" class="list-group-item app-row" data-search-item data-search-group="complaints" data-search-text="{{ complaint.complaint_number }} {{ complaint.subject }} {{ complaint.get_status_display }} {{ complaint.filed_date|date:'d M Y' }}">
+                            <div>
+                                <h6 class="mb-1">{{ complaint.complaint_number }}</h6>
+                                <small class="text-muted">{{ complaint.subject }} • {{ complaint.filed_date|date:"d M Y" }}</small>
+                            </div>
+                            <span class="badge text-bg-{% if complaint.status == 'resolved' %}success{% elif complaint.status == 'closed' %}secondary{% elif complaint.status == 'open' %}warning{% else %}info{% endif %}">{{ complaint.get_status_display }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state p-4 text-center">
+                        <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                        <h6 class="mb-1">No Complaints Filed</h6>
+                        <p class="text-muted small mb-0">Agar koi civic issue ho to complaint file karke status track karo.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-6">
+        <section class="card modern-panel h-100">
+            <div class="card-header panel-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Application Status Snapshot</h5>
+            </div>
+            <div class="card-body">
+                {% if stats.total_applications > 0 %}
+                    {% widthratio stats.pending stats.total_applications 100 as pending_pct %}
+                    {% widthratio stats.approved stats.total_applications 100 as approved_pct %}
+                    {% widthratio stats.rejected stats.total_applications 100 as rejected_pct %}
+                {% else %}
+                    {% widthratio 0 1 100 as pending_pct %}
+                    {% widthratio 0 1 100 as approved_pct %}
+                    {% widthratio 0 1 100 as rejected_pct %}
+                {% endif %}
+
+                <div class="mini-chart-item">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Pending</span>
+                        <strong>{{ stats.pending }}</strong>
+                    </div>
+                    <div class="progress mini-progress" role="progressbar" aria-label="Pending applications" aria-valuenow="{{ pending_pct }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-warning" style="width: {{ pending_pct }}%"></div>
+                    </div>
+                </div>
+                <div class="mini-chart-item mt-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Approved</span>
+                        <strong>{{ stats.approved }}</strong>
+                    </div>
+                    <div class="progress mini-progress" role="progressbar" aria-label="Approved applications" aria-valuenow="{{ approved_pct }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-success" style="width: {{ approved_pct }}%"></div>
+                    </div>
+                </div>
+                <div class="mini-chart-item mt-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Rejected</span>
+                        <strong>{{ stats.rejected }}</strong>
+                    </div>
+                    <div class="progress mini-progress" role="progressbar" aria-label="Rejected applications" aria-valuenow="{{ rejected_pct }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar bg-danger" style="width: {{ rejected_pct }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <div class="col-lg-6">
+        <section class="card modern-panel h-100">
+            <div class="card-header panel-header">
+                <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Service Alerts</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert-row">
+                    <i class="fas fa-circle-info"></i>
+                    <div>
+                        <h6 class="mb-1">Application Processing</h6>
+                        <p class="mb-0 text-muted small">Submitted requests ka live status aap "My Applications" se track kar sakte hain.</p>
+                    </div>
+                </div>
+                <div class="alert-row">
+                    <i class="fas fa-bolt"></i>
+                    <div>
+                        <h6 class="mb-1">Bill Reminder</h6>
+                        <p class="mb-0 text-muted small">Pending bills ko due date se pehle clear karke penalty avoid karein.</p>
+                    </div>
+                </div>
+                <div class="alert-row mb-0">
+                    <i class="fas fa-shield-heart"></i>
+                    <div>
+                        <h6 class="mb-1">Citizen Support</h6>
+                        <p class="mb-0 text-muted small">Complaint register karne ke baad updates notification bell me milenge.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="card modern-panel mt-4" data-search-section="quick-actions">
+    <div class="card-header panel-header">
+        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{% url 'apply_income_certificate' %}" class="btn btn-primary w-100 quick-btn" data-search-item data-search-group="quick-actions" data-search-text="apply certificate income certificate">
+                    <i class="fas fa-certificate me-2"></i>Apply Certificate
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'electricity_bill_service' %}" class="btn btn-warning w-100 quick-btn" data-search-item data-search-group="quick-actions" data-search-text="pay bill check bill electricity water property tax">
+                    <i class="fas fa-file-invoice me-2"></i>Pay / Check Bill
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'file_complaint' %}" class="btn btn-danger w-100 quick-btn" data-search-item data-search-group="quick-actions" data-search-text="file complaint grievance issue report">
+                    <i class="fas fa-megaphone me-2"></i>File Complaint
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

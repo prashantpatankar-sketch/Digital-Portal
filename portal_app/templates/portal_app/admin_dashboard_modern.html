@@ -1,0 +1,277 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal_app/css/modern-portal.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="modern-sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="#" class="sidebar-logo">
+            <i class="fas fa-landmark"></i>
+            <span class="sidebar-text">Gram Panchayat</span>
+        </a>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <a href="{% url 'admin_dashboard' %}" class="nav-item active">
+            <i class="fas fa-tachometer-alt"></i>
+            <span class="sidebar-text">Dashboard</span>
+        </a>
+        <a href="{% url 'admin_applications' %}" class="nav-item">
+            <i class="fas fa-file-alt"></i>
+            <span class="sidebar-text">Applications</span>
+        </a>
+        <a href="{% url 'admin_complaints' %}" class="nav-item">
+            <i class="fas fa-megaphone"></i>
+            <span class="sidebar-text">Complaints</span>
+        </a>
+        <a href="{% url 'admin_users' %}" class="nav-item">
+            <i class="fas fa-users"></i>
+            <span class="sidebar-text">Users</span>
+        </a>
+        <a href="{% url 'create_staff' %}" class="nav-item">
+            <i class="fas fa-user-plus"></i>
+            <span class="sidebar-text">Create Staff</span>
+        </a>
+        <a href="/admin/" class="nav-item" target="_blank">
+            <i class="fas fa-cog"></i>
+            <span class="sidebar-text">System Admin</span>
+        </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <p class="mb-0">© {% now "Y" %} Digital Gram Panchayat</p>
+        <small>Secure Government Portal</small>
+    </div>
+</div>
+
+<div class="modern-navbar">
+    <div class="navbar-left">
+        <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="navbar-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search applications, users...">
+        </div>
+    </div>
+    
+    <div class="navbar-right">
+        <button class="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+        </button>
+        
+        <div class="user-dropdown">
+            <button class="user-avatar">
+                <img src="https://picsum.photos/seed/admin/35/35.jpg" alt="Admin">
+                <div class="user-info">
+                    <p class="user-name">{{ request.user.get_full_name|default:request.user.username }}</p>
+                    <p class="user-role">Administrator</p>
+                </div>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        
+        <a href="{% url 'logout' %}" class="btn-action delete">
+            <i class="fas fa-sign-out-alt"></i>
+        </a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="text-gradient mb-2">Admin Dashboard</h1>
+                <p class="text-muted">Welcome back, {{ request.user.get_full_name|default:request.user.username }}! Here's your system overview.</p>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_citizens }}</div>
+                <div class="stat-label">Total Citizens</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    +{{ new_users_today }} today
+                </div>
+            </div>
+            
+            <div class="stat-card success">
+                <div class="stat-icon success">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-value">{{ total_staff }}</div>
+                <div class="stat-label">Total Staff</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-check-circle"></i>
+                    Active
+                </div>
+            </div>
+            
+            <div class="stat-card warning">
+                <div class="stat-icon warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-value">{{ pending_applications }}</div>
+                <div class="stat-label">Pending Applications</div>
+                <div class="stat-change positive">
+                    <i class="fas fa-hourglass-half"></i>
+                    Review needed
+                </div>
+            </div>
+            
+            <div class="stat-card danger">
+                <div class="stat-icon danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-value">{{ recent_complaints }}</div>
+                <div class="stat-label">Open Complaints</div>
+                <div class="stat-change negative">
+                    <i class="fas fa-arrow-up"></i>
+                    Attention needed
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="modern-table">
+                    <div class="card-header">
+                        <h5><i class="fas fa-file-alt me-2"></i>Recent Applications</h5>
+                        <button class="btn-modern btn-primary-modern">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                    
+                    {% if recent_applications %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Application ID</th>
+                                    <th>Applicant</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in recent_applications %}
+                                <tr>
+                                    <td>
+                                        <span class="modern-badge">{{ app.id }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://picsum.photos/seed/user{{ app.id }}/30/30.jpg" alt="User" style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                                            <span>{{ app.applicant.get_full_name|default:"Unknown" }}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{ app.get_certificate_type_display|default:"General" }}</td>
+                                    <td>
+                                        <span class="modern-badge {{ app.status|default:'pending' }}">
+                                            {{ app.get_status_display|default:app.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ app.applied_date|date:"d M Y" }}</td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <a href="{% url 'admin_review_application' app.id %}" class="btn-action view">
+                                                <i class="fas fa-eye"></i>
+                                                View
+                                            </a>
+                                            <button class="btn-action edit">
+                                                <i class="fas fa-check"></i>
+                                                Approve
+                                            </button>
+                                            <button class="btn-action delete">
+                                                <i class="fas fa-times"></i>
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5>No Applications Found</h5>
+                            <p class="text-muted">No applications have been submitted yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mainContent = document.querySelector('.main-content');
+    const navbar = document.querySelector('.modern-navbar');
+    
+    sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        document.body.classList.toggle('sidebar-collapsed');
+    });
+    
+    // Active Menu Item
+    const currentPath = window.location.pathname;
+    const menuItems = document.querySelectorAll('.nav-item');
+    
+    menuItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === currentPath) {
+            item.classList.add('active');
+        }
+    });
+    
+    // Notification Animation
+    const notificationBell = document.querySelector('.notification-bell');
+    if (notificationBell) {
+        setInterval(() => {
+            notificationBell.style.animation = 'pulse 0.5s ease-in-out';
+            setTimeout(() => {
+                notificationBell.style.animation = '';
+            }, 500);
+        }, 5000);
+    }
+    
+    // Search Functionality
+    const searchInput = document.querySelector('.navbar-search input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            // Implement search functionality here
+            console.log('Searching for:', searchTerm);
+        });
+    }
+    
+    // User Dropdown
+    const userAvatar = document.querySelector('.user-avatar');
+    if (userAvatar) {
+        userAvatar.addEventListener('click', function() {
+            // Implement dropdown functionality
+            console.log('User dropdown clicked');
+        });
+    }
+});
+</script>
+{% endblock %}

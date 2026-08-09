@@ -158,7 +158,7 @@
             <div class="otp-container">
                 <div class="otp-label">Your Verification Code</div>
                 <div class="otp-code">{{ otp_code }}</div>
-                <div class="otp-expiry">⏰ This code expires in {{ expiry_minutes }} minutes</div>
+                <div class="otp-expiry">⏰ This code expires in {{ expiry_minutes }} minute{% if expiry_minutes != 1 %}s{% endif %}</div>
             </div>
             
             <!-- Instructions -->
@@ -167,7 +167,7 @@
                 <ul>
                     <li>Enter the 6-digit code on the verification page</li>
                     <li>You have 3 attempts to enter the correct code</li>
-                    <li>The code is valid for {{ expiry_minutes }} minutes only</li>
+                    <li>The code is valid for {{ expiry_minutes }} minute{% if expiry_minutes != 1 %}s{% endif %} only</li>
                     <li>After verification, you can login to your account</li>
                 </ul>
             </div>

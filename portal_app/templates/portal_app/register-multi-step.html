@@ -1,0 +1,362 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block title %}Premium Registration - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal_app/css/register-multistep.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="multistep-registration-container">
+    <!-- Background Elements -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <div class="multistep-wrapper">
+        <!-- Progress Bar -->
+        <div class="progress-section">
+            <div class="progress-bar-wrapper">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-steps">
+                    <div class="step-indicator active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Basic Info</div>
+                    </div>
+                    <div class="step-indicator" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Personal Details</div>
+                    </div>
+                    <div class="step-indicator" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Address</div>
+                    </div>
+                    <div class="step-indicator" data-step="4">
+                        <div class="step-number">✓</div>
+                        <div class="step-label">Preview</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <div class="form-card glass-card">
+                <!-- Step 1: Basic Info -->
+                <div class="form-step active" data-step="1">
+                    <div class="step-header">
+                        <h2><i class="bi bi-person-vcard-fill me-2"></i>Step 1: Basic Information</h2>
+                        <p>Let's start with your basic details</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username" class="form-label">Username <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-person-fill icon"></i>
+                            <input type="text" id="username" class="form-control" placeholder="4-20 characters" maxlength="20" required>
+                            <span class="validation-feedback" id="username-error"></span>
+                            <span class="validation-success" id="username-success"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullname" class="form-label">Full Name <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-type icon"></i>
+                            <input type="text" id="fullname" class="form-control" placeholder="Your full name" required>
+                            <span class="validation-feedback" id="fullname-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email Address <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-envelope-fill icon"></i>
+                            <input type="email" id="email" class="form-control" placeholder="your.email@example.com" required>
+                            <span class="validation-feedback" id="email-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mobile" class="form-label">Mobile Number <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-telephone-fill icon"></i>
+                            <input type="tel" id="mobile" class="form-control" placeholder="10-digit mobile number" maxlength="10" inputmode="numeric" required>
+                            <span class="validation-feedback" id="mobile-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password1" class="form-label">Password <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-lock-fill icon"></i>
+                            <input type="password" id="password1" class="form-control" placeholder="Create a strong password" required>
+                            <button type="button" class="password-toggle" data-target="password1">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-meter">
+                                <div class="strength-value" id="passwordStrength"></div>
+                            </div>
+                            <span class="strength-text" id="strengthText">Password strength: Weak</span>
+                        </div>
+                        <span class="validation-feedback" id="password1-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password2" class="form-label">Confirm Password <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-lock-fill icon"></i>
+                            <input type="password" id="password2" class="form-control" placeholder="Confirm your password" required>
+                            <button type="button" class="password-toggle" data-target="password2">
+                                <i class="bi bi-eye-fill"></i>
+                            </button>
+                        </div>
+                        <span class="validation-feedback" id="password2-error"></span>
+                    </div>
+                </div>
+
+                <!-- Step 2: Personal Details -->
+                <div class="form-step" data-step="2">
+                    <div class="step-header">
+                        <h2><i class="bi bi-person-badge-fill me-2"></i>Step 2: Personal Details</h2>
+                        <p>Tell us more about yourself</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender" class="form-label">Gender <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="gender" value="male" required>
+                                <span class="radio-custom"></span>
+                                <i class="bi bi-person-fill me-2"></i>Male
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="gender" value="female" required>
+                                <span class="radio-custom"></span>
+                                <i class="bi bi-person-fill me-2"></i>Female
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="gender" value="other" required>
+                                <span class="radio-custom"></span>
+                                <i class="bi bi-person-fill me-2"></i>Other
+                            </label>
+                        </div>
+                        <span class="validation-feedback" id="gender-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dob" class="form-label">Date of Birth <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-calendar-event-fill icon"></i>
+                            <input type="date" id="dob" class="form-control" required>
+                            <span class="validation-feedback" id="dob-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profilePhoto" class="form-label">Profile Photo <span class="optional">(Optional)</span></label>
+                        <div class="file-upload">
+                            <input type="file" id="profilePhoto" class="file-input" accept="image/*">
+                            <div class="file-upload-area">
+                                <i class="bi bi-cloud-upload me-2"></i>
+                                <div class="file-upload-text">
+                                    <p class="upload-label">Click to upload or drag and drop</p>
+                                    <p class="upload-hint">PNG, JPG, GIF up to 5MB</p>
+                                </div>
+                            </div>
+                            <div class="file-preview" id="filePreview"></div>
+                        </div>
+                        <span class="validation-feedback" id="profilePhoto-error"></span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Address Details -->
+                <div class="form-step" data-step="3">
+                    <div class="step-header">
+                        <h2><i class="bi bi-geo-alt-fill me-2"></i>Step 3: Address Details</h2>
+                        <p>Where do you live?</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address" class="form-label">Address <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-house-fill icon"></i>
+                            <textarea id="address" class="form-control" placeholder="House number, street, landmark, area" rows="3" required></textarea>
+                        </div>
+                        <span class="validation-feedback" id="address-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="state" class="form-label">State <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-map-fill icon"></i>
+                            <input type="text" id="state" class="form-control" placeholder="Your state" required>
+                        </div>
+                        <span class="validation-feedback" id="state-error"></span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="district" class="form-label">District <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-geo-fill icon"></i>
+                                <input type="text" id="district" class="form-control" placeholder="Your district" required>
+                            </div>
+                            <span class="validation-feedback" id="district-error"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pincode" class="form-label">Pincode <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-signpost-2-fill icon"></i>
+                                <input type="text" id="pincode" class="form-control" placeholder="6-digit code" maxlength="6" inputmode="numeric" required>
+                            </div>
+                            <span class="validation-feedback" id="pincode-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Preview -->
+                <div class="form-step" data-step="4">
+                    <div class="step-header">
+                        <h2><i class="bi bi-eye-fill me-2"></i>Review Your Information</h2>
+                        <p>Please verify all details before submitting</p>
+                    </div>
+
+                    <div class="preview-container">
+                        <!-- Profile Section -->
+                        <div class="preview-section">
+                            <div class="preview-profile">
+                                <div class="profile-image">
+                                    <div class="profile-avatar" id="previewAvatar">
+                                        <i class="bi bi-person-circle"></i>
+                                    </div>
+                                    <div class="profile-image-file" id="previewImageFile"></div>
+                                </div>
+                                <div class="profile-info">
+                                    <h3 id="previewFullname">-</h3>
+                                    <p id="previewUsername">@-</p>
+                                    <p class="profile-meta" id="previewGender">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic Info Section -->
+                        <div class="preview-section">
+                            <h4 class="preview-title"><i class="bi bi-info-circle-fill me-2"></i>Basic Information</h4>
+                            <div class="preview-grid">
+                                <div class="preview-item">
+                                    <label>Email</label>
+                                    <p id="previewEmail">-</p>
+                                </div>
+                                <div class="preview-item">
+                                    <label>Mobile Number</label>
+                                    <p id="previewMobile">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Personal Details Section -->
+                        <div class="preview-section">
+                            <h4 class="preview-title"><i class="bi bi-person-badge-fill me-2"></i>Personal Details</h4>
+                            <div class="preview-grid">
+                                <div class="preview-item">
+                                    <label>Date of Birth</label>
+                                    <p id="previewDOB">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Address Section -->
+                        <div class="preview-section">
+                            <h4 class="preview-title"><i class="bi bi-geo-alt-fill me-2"></i>Address Details</h4>
+                            <div class="preview-grid">
+                                <div class="preview-item full-width">
+                                    <label>Address</label>
+                                    <p id="previewAddress">-</p>
+                                </div>
+                                <div class="preview-item">
+                                    <label>State</label>
+                                    <p id="previewState">-</p>
+                                </div>
+                                <div class="preview-item">
+                                    <label>District</label>
+                                    <p id="previewDistrict">-</p>
+                                </div>
+                                <div class="preview-item">
+                                    <label>Pincode</label>
+                                    <p id="previewPincode">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="preview-warning">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        <p>Please review all information carefully. You'll need to verify your email with OTP after submission.</p>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+                        <i class="bi bi-chevron-left me-2"></i>Previous
+                    </button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">
+                        Next<i class="bi bi-chevron-right ms-2"></i>
+                    </button>
+                    <button type="button" class="btn btn-success" id="editBtn" style="display: none;">
+                        <i class="bi bi-pencil-square me-2"></i>Edit
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submitBtn" form="registrationForm" style="display: none;">
+                        <i class="bi bi-check-circle me-2"></i>Confirm & Submit
+                    </button>
+                </div>
+
+                <!-- Auto-save Indicator -->
+                <div class="autosave-indicator">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span id="autosaveStatus">All changes saved</span>
+                </div>
+            </div>
+
+            <!-- Hidden Form for submission -->
+            <form id="registrationForm" method="post" enctype="multipart/form-data" style="display: none;">
+                {% csrf_token %}
+                <input type="hidden" id="formUsername" name="username">
+                <input type="hidden" id="formFullname" name="fullname">
+                <input type="hidden" id="formEmail" name="email">
+                <input type="hidden" id="formMobile" name="mobile">
+                <input type="hidden" id="formPassword1" name="password1">
+                <input type="hidden" id="formPassword2" name="password2">
+                <input type="hidden" id="formGender" name="gender">
+                <input type="hidden" id="formDOB" name="date_of_birth">
+                <input type="hidden" id="formAddress" name="address">
+                <input type="hidden" id="formState" name="state">
+                <input type="hidden" id="formDistrict" name="district">
+                <input type="hidden" id="formPincode" name="pincode">
+                <input type="hidden" id="formProfilePhoto" name="profile_photo">
+            </form>
+
+            <!-- Help Section -->
+            <div class="help-section">
+                <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                <p class="text-muted">Need help? <a href="{% url 'about' %}">Contact support</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast/Alert Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'portal_app/js/register-multistep.js' %}"></script>
+{% endblock %}

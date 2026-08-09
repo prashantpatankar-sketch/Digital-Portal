@@ -1,0 +1,410 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block pre_content %}
+<section
+    class="smart-ai-panel dashboard-reveal"
+    id="smartDashboardPanel"
+    data-review-url="{% if user.role == 'admin' or user.role == 'staff' %}{% url 'admin_applications' %}{% else %}{% url 'my_applications' %}{% endif %}"
+    data-complaints-url="{% if user.role == 'admin' or user.role == 'staff' %}{% url 'admin_complaints' %}{% else %}{% url 'my_complaints' %}{% endif %}"
+    data-users-url="{% url 'admin_users' %}"
+    data-settings-url="{% url 'account_settings' %}"
+    data-apply-url="{% url 'apply_income_certificate' %}"
+    data-applications-url="{% if user.role == 'admin' or user.role == 'staff' %}{% url 'admin_applications' %}{% else %}{% url 'my_applications' %}{% endif %}"
+    {% if user.role != 'admin' and user.role != 'staff' %}data-chatbot-url="{% url 'chatbot_api' %}"{% endif %}
+    data-income-url="{% url 'apply_income_certificate' %}"
+    data-birth-url="{% url 'apply_birth_certificate' %}"
+    data-death-url="{% url 'apply_death_certificate' %}"
+    data-complaint-url="{% url 'file_complaint' %}"
+    data-electricity-url="{% url 'electricity_bill_service' %}"
+    data-water-url="{% url 'water_bill_service' %}"
+    data-property-url="{% url 'property_tax_service' %}"
+    data-bill-request-url="{% url 'submit_bill_request' %}"
+>
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+        <div>
+            <span class="smart-ai-kicker"><i class="bi bi-stars me-1"></i>AI Smart Dashboard</span>
+            <h3 class="mt-2 mb-1">Logic-based insights for faster decisions</h3>
+            <p class="mb-0 text-muted">No external API. Insights are generated from your role, counters, and current queue state.</p>
+        </div>
+        <div class="smart-ai-badge"><i class="bi bi-broadcast-pin"></i><span>Live insights</span></div>
+    </div>
+
+    <div class="row g-3 align-items-stretch">
+        <div class="col-xl-8">
+            <div class="smart-insight-grid" id="smartInsightCards">
+                <div class="smart-skeleton" aria-hidden="true">
+                    <div class="skeleton-tile"></div>
+                    <div class="skeleton-tile"></div>
+                    <div class="skeleton-tile"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="smart-suggestion-stack" id="smartSuggestionList">
+                <div class="smart-skeleton" aria-hidden="true">
+                    <div class="skeleton-pill"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.role != 'admin' and user.role != 'staff' %}
+    <div class="assistant-inline-card mt-3" id="assistantInlineCard">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <h5 class="mb-0"><i class="fas fa-wand-magic-sparkles me-2"></i>Smart Digital Assistant</h5>
+            <span class="assistant-badge">Rule-based assistant</span>
+        </div>
+        <div class="assistant-inline-input">
+            <input type="text" id="assistantQueryInput" placeholder="Try: Apply income certificate">
+            <button type="button" id="assistantSendBtn" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane me-1"></i>Run</button>
+        </div>
+        <div class="assistant-quick-actions mt-2" id="assistantQuickActions">
+            <button type="button" class="btn btn-sm btn-outline-primary" data-assist-query="Apply income certificate">Income certificate</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-assist-query="Apply birth certificate">Birth certificate</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-assist-query="File complaint">File complaint</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" data-assist-query="Pay electricity bill">Electricity bill</button>
+        </div>
+        <div class="assistant-inline-response mt-2" id="assistantInlineResponse"></div>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker mb-1">Digital Grampanchayat Portal</p>
+        <h2 class="mb-2">{{ dashboard_heading|default:"Premium Dashboard" }}</h2>
+        <p class="mb-0 text-muted">{{ dashboard_subtitle|default:"Heavy analytics dashboard with role-aware intelligence." }}</p>
+    </div>
+    <div class="hero-actions">
+        {% if dashboard_role == 'admin' %}
+            <a href="{% url 'admin_users' %}" class="btn btn-primary btn-sm"><i class="fas fa-users me-1"></i>Manage Users</a>
+            <a href="{% url 'staff_management' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-user-gear me-1"></i>Staff Management</a>
+            <a href="{% url 'admin_reports' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-chart-pie me-1"></i>Reports</a>
+            <a href="{% url 'admin_complaints' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-bullhorn me-1"></i>Complaints</a>
+        {% elif dashboard_role == 'staff' %}
+            <a href="{% url 'admin_applications' %}" class="btn btn-primary btn-sm"><i class="fas fa-file-signature me-1"></i>Assigned Work</a>
+            <a href="{% url 'admin_complaints' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-comments me-1"></i>Complaints</a>
+            <a href="{% url 'account_settings' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-gear me-1"></i>Settings</a>
+        {% else %}
+            <a href="{% url 'apply_income_certificate' %}" class="btn btn-primary btn-sm"><i class="fas fa-certificate me-1"></i>Apply Certificate</a>
+            <a href="{% url 'pay_bills' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-file-invoice me-1"></i>Pay Bill</a>
+            <a href="{% url 'file_complaint' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-bullhorn me-1"></i>File Complaint</a>
+        {% endif %}
+    </div>
+</section>
+
+{% if dashboard_role == 'staff' %}
+<section class="row g-3 mb-4">
+    <div class="col-12 col-xl-8">
+        <div class="card panel-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0"><i class="fas fa-file-signature me-2"></i>Review Queue</h5>
+                <a href="{% url 'admin_applications' %}" class="btn btn-sm btn-outline-primary">Open all applications</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Application</th>
+                                <th>Citizen</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in review_queue %}
+                            <tr>
+                                <td>{{ application.application_number }}</td>
+                                <td>
+                                    <strong>{{ application.applicant.get_full_name|default:application.applicant.username }}</strong><br>
+                                    <small class="text-muted">{{ application.applicant.phone_number }}</small>
+                                </td>
+                                <td>{{ application.get_application_type_display }}</td>
+                                <td><span class="badge text-bg-warning">{{ application.get_status_display }}</span></td>
+                                <td class="text-end">
+                                    <form method="post" action="{% url 'staff_application_action' application.id %}" class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                                        {% csrf_token %}
+                                        <textarea name="admin_remarks" class="form-control form-control-sm" rows="2" placeholder="Add remarks for this decision" style="min-width: 220px;"></textarea>
+                                        <button type="submit" name="action" value="approved" class="btn btn-sm btn-success">Approve</button>
+                                        <button type="submit" name="action" value="rejected" class="btn btn-sm btn-danger">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-4 text-muted">No pending applications in the review queue.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="card panel-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Complaints</h5>
+                <a href="{% url 'admin_complaints' %}" class="btn btn-sm btn-outline-primary">Open complaints</a>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for complaint in recent_complaints %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <div class="fw-semibold">{{ complaint.subject|default:complaint.complaint_number }}</div>
+                                <small class="text-muted">{{ complaint.complainant.get_full_name|default:complaint.complainant.username }}</small>
+                            </div>
+                            <span class="badge text-bg-secondary">{{ complaint.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">No complaints available.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="row g-3 mb-4">
+    <div class="col-6 col-lg-2">
+        <article class="metric-card metric-primary">
+            <div class="metric-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="metric-content"><h3 data-metric-key="total_applications">{{ total_applications|default:0 }}</h3><p>Total Applications</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-2">
+        <article class="metric-card metric-warning">
+            <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="metric-content"><h3 data-metric-key="pending_applications">{{ pending_applications|default:0 }}</h3><p>Pending</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-2">
+        <article class="metric-card metric-success">
+            <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="metric-content"><h3 data-metric-key="approved_applications">{{ approved_applications|default:0 }}</h3><p>Approved</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-2">
+        <article class="metric-card metric-danger">
+            <div class="metric-icon"><i class="fas fa-xmark-circle"></i></div>
+            <div class="metric-content"><h3 data-metric-key="rejected_applications">{{ rejected_applications|default:0 }}</h3><p>Rejected</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-2">
+        <article class="metric-card metric-info">
+            <div class="metric-icon"><i class="fas fa-users"></i></div>
+            <div class="metric-content"><h3>{{ extra_metric_value|default:0 }}</h3><p>{{ extra_metric_label|default:"Total Users" }}</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-2">
+        <article class="metric-card metric-secondary">
+            <div class="metric-icon"><i class="fas fa-comments"></i></div>
+            <div class="metric-content"><h3>{{ complaints_count|default:0 }}</h3><p>Complaints</p></div>
+        </article>
+    </div>
+</section>
+
+<section class="row g-3 mb-4">
+    <div class="col-12 col-xl-4">
+        <div class="card panel-card chart-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Applications by Category</h5>
+                <span class="badge rounded-pill text-bg-primary">Bar</span>
+            </div>
+            <div class="card-body"><canvas id="applicationsChart" height="280"></canvas></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="card panel-card chart-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Status Distribution</h5>
+                <span class="badge rounded-pill text-bg-info">Pie</span>
+            </div>
+            <div class="card-body"><canvas id="certificatesChart" height="280"></canvas></div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4">
+        <div class="card panel-card chart-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Monthly Growth</h5>
+                <span class="badge rounded-pill text-bg-success">Line</span>
+            </div>
+            <div class="card-body"><canvas id="userGrowthChart" height="280"></canvas></div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3 mb-4">
+    <div class="col-12 col-xl-6">
+        <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock-rotate-left me-2"></i>Recent Activity</h5>
+                <span class="badge rounded-pill text-bg-primary">Timeline</span>
+            </div>
+            <div class="card-body">
+                <div class="activity-timeline">
+                    {% for activity in recent_activities %}
+                        <div class="timeline-item">
+                            <div class="timeline-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ activity.action|title }}</h6>
+                                <p class="mb-1 text-muted">{{ activity.description|default:'Activity recorded' }}</p>
+                                <small class="text-muted">{{ activity.created_at|date:"d M Y, H:i" }}</small>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="empty-panel">
+                            <i class="fas fa-stream"></i>
+                            <p class="mb-0">No recent activity available.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-6">
+        <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Smart Insights</h5>
+                <span class="badge rounded-pill text-bg-warning">AI-like</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    {% for insight in insight_cards %}
+                        <div class="col-12 col-md-6">
+                            <div class="insight-tile insight-{{ insight.accent|default:'primary' }}">
+                                <div class="insight-icon"><i class="{{ insight.icon|default:'fas fa-star' }}"></i></div>
+                                <div>
+                                    <h6 class="mb-1">{{ insight.title }}</h6>
+                                    <p class="mb-0">{{ insight.message }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="empty-panel">
+                                <i class="fas fa-lightbulb"></i>
+                                <p class="mb-0">Insights will appear as activity grows.</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="quick-action-panel mt-3">
+                    <a href="{% if dashboard_role == 'admin' %}{% url 'admin_applications' %}?category=certificates{% elif dashboard_role == 'staff' %}{% url 'admin_applications' %}{% else %}{% url 'apply_income_certificate' %}{% endif %}" class="quick-action-btn">
+                        <i class="fas fa-certificate"></i><span>Apply Certificate</span>
+                    </a>
+                    <a href="{% if dashboard_role == 'admin' %}{% url 'admin_applications' %}?category=bills{% elif dashboard_role == 'staff' %}{% url 'admin_applications' %}?category=bills{% else %}{% url 'pay_bills' %}{% endif %}" class="quick-action-btn">
+                        <i class="fas fa-file-invoice-dollar"></i><span>Pay Bill</span>
+                    </a>
+                    <a href="{% if dashboard_role == 'admin' or dashboard_role == 'staff' %}{% url 'admin_complaints' %}{% else %}{% url 'file_complaint' %}{% endif %}" class="quick-action-btn">
+                        <i class="fas fa-bullhorn"></i><span>File Complaint</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3">
+    <div class="col-12 col-xl-7">
+        <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-table me-2"></i>Recent Applications</h5>
+                <span class="badge rounded-pill text-bg-secondary">Sortable</span>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_applications %}
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0 sortable-table" data-sortable>
+                            <thead>
+                                <tr>
+                                    <th data-sort="text">Application</th>
+                                    <th data-sort="text">Type</th>
+                                    {% if dashboard_role == 'admin' or dashboard_role == 'staff' %}
+                                        <th data-sort="text">Applicant</th>
+                                    {% endif %}
+                                    <th data-sort="text">Status</th>
+                                    <th data-sort="date">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in recent_applications %}
+                                    <tr>
+                                        <td>{{ app.application_number }}</td>
+                                        <td>{{ app.get_application_type_display }}</td>
+                                        {% if dashboard_role == 'admin' or dashboard_role == 'staff' %}
+                                            <td>{{ app.applicant.get_full_name|default:app.applicant.username }}</td>
+                                        {% endif %}
+                                        <td><span class="badge text-bg-{% if app.status == 'approved' %}success{% elif app.status == 'rejected' %}danger{% elif app.status == 'pending' %}warning{% else %}info{% endif %}">{{ app.get_status_display }}</span></td>
+                                        <td data-sort-value="{{ app.applied_date|date:'Y-m-d H:i:s' }}">{{ app.applied_date|date:"d M Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-panel">
+                        <i class="fas fa-folder-open"></i>
+                        <p class="mb-0">No applications available.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+        <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Complaints List</h5>
+                <span class="badge rounded-pill text-bg-secondary">Sortable</span>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_complaints %}
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0 sortable-table" data-sortable>
+                            <thead>
+                                <tr>
+                                    <th data-sort="text">Complaint</th>
+                                    {% if dashboard_role == 'admin' or dashboard_role == 'staff' %}
+                                        <th data-sort="text">Citizen</th>
+                                    {% endif %}
+                                    <th data-sort="text">Status</th>
+                                    <th data-sort="date">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for complaint in recent_complaints %}
+                                    <tr>
+                                        <td>{{ complaint.complaint_number }}</td>
+                                        {% if dashboard_role == 'admin' or dashboard_role == 'staff' %}
+                                            <td>{{ complaint.complainant.get_full_name|default:complaint.complainant.username }}</td>
+                                        {% endif %}
+                                        <td><span class="badge text-bg-{% if complaint.status == 'resolved' %}success{% elif complaint.status == 'closed' %}secondary{% elif complaint.status == 'open' %}warning{% else %}info{% endif %}">{{ complaint.get_status_display }}</span></td>
+                                        <td data-sort-value="{{ complaint.filed_date|date:'Y-m-d H:i:s' }}">{{ complaint.filed_date|date:"d M Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-panel">
+                        <i class="fas fa-comment-slash"></i>
+                        <p class="mb-0">No complaints available.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'portal_app/dashboard/base.html' %}
+
+{% block title %}Download Center - Digital Gram Panchayat{% endblock %}
+
+{% block content %}
+<section>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Download Center</h2>
+            <p class="text-muted mb-0">All approved certificates and generated bill documents in one place.</p>
+        </div>
+        <a href="{% url 'my_certificates' %}" class="btn btn-outline-primary">
+            <i class="bi bi-patch-check me-1"></i>My Certificates
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-file-earmark-pdf me-2"></i>Certificate Documents</span>
+                    <span class="badge bg-primary">{{ applications_with_docs|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if applications_with_docs %}
+                        <div class="list-group list-group-flush">
+                            {% for app in applications_with_docs %}
+                                <a href="{% url 'download_certificate' app.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4">
+                                    <div>
+                                        <h6 class="mb-1">{{ app.application_number }}</h6>
+                                        <small class="text-muted">{{ app.get_application_type_display }} | {{ app.applied_date|date:"d M Y" }}</small>
+                                    </div>
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">No downloadable certificates yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-receipt me-2"></i>Bill & Tax Documents</span>
+                    <span class="badge bg-secondary">{{ recent_bill_docs|length }}</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if recent_bill_docs %}
+                        <div class="list-group list-group-flush">
+                            {% for doc in recent_bill_docs %}
+                                <a href="{{ doc.url }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 px-4">
+                                    <div>
+                                        <h6 class="mb-1">{{ doc.title }}</h6>
+                                        <small class="text-muted">{{ doc.reference }}</small>
+                                    </div>
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted">No generated bill documents yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

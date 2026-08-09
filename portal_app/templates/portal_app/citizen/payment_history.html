@@ -1,0 +1,84 @@
+{% extends "portal_app/base.html" %}
+
+{% block title %}Payment History{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge text-bg-primary rounded-pill mb-2">Payments</span>
+                <h1 class="mb-2 fw-bold">Payment History</h1>
+                <p class="mb-0 text-muted">Completed transactions for taxes and utility bills are shown on this single page.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'payments' %}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Back to Payments</a>
+                <a href="{% url 'pay_bills' %}" class="btn btn-primary"><i class="bi bi-credit-card me-2"></i>Pay Bills</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="card">
+        <div class="card-body p-0">
+            {% if tax_payments or electricity_paid or water_paid or property_paid %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Reference</th>
+                                <th>Amount</th>
+                                <th>Transaction</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in tax_payments %}
+                                <tr>
+                                    <td>{{ item.get_tax_type_display }}</td>
+                                    <td>{{ item.property_number }}</td>
+                                    <td>INR {{ item.total_amount }}</td>
+                                    <td>{{ item.transaction_id|default:'-' }}</td>
+                                    <td>{{ item.payment_date|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                            {% for item in electricity_paid %}
+                                <tr>
+                                    <td>Electricity Bill</td>
+                                    <td>{{ item.consumer_number }}</td>
+                                    <td>INR {{ item.amount }}</td>
+                                    <td>{{ item.transaction_id|default:'-' }}</td>
+                                    <td>{{ item.paid_at|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                            {% for item in water_paid %}
+                                <tr>
+                                    <td>Water Bill</td>
+                                    <td>{{ item.connection_number }}</td>
+                                    <td>INR {{ item.amount }}</td>
+                                    <td>{{ item.transaction_id|default:'-' }}</td>
+                                    <td>{{ item.paid_at|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                            {% for item in property_paid %}
+                                <tr>
+                                    <td>Property Tax</td>
+                                    <td>{{ item.property_number }}</td>
+                                    <td>INR {{ item.tax_amount }}</td>
+                                    <td>{{ item.transaction_id|default:'-' }}</td>
+                                    <td>{{ item.paid_at|date:"d M Y, H:i" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-receipt fs-1 d-block mb-2"></i>
+                    No payment history available yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

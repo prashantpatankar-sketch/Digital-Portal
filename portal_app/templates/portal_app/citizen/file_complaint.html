@@ -1,10 +1,19 @@
-{% extends 'portal_app/base.html' %}
+{% extends "portal_app/dashboard/base.html" %}
 {% load crispy_forms_tags %}
 
 {% block title %}File Complaint{% endblock %}
 
 {% block content %}
 <div class="container my-4">
+    <div class="page-hero mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h3 class="fw-bold mb-1">File Complaint</h3>
+                <p class="text-muted mb-0">Report civic issues for faster action and tracking.</p>
+            </div>
+            <span class="badge bg-danger">Citizen Services</span>
+        </div>
+    </div>
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card">

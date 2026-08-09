@@ -8,6 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 import os
 import pymysql
 import dj_database_url
+from django.utils.translation import gettext_lazy as _
 
 # Use PyMySQL as MySQLdb
 pymysql.install_as_MySQLdb()
@@ -20,16 +21,18 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-pro
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
-    if host.strip()
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.loca.lt',
+    'https://*.lhr.life',
+    'https://*.pinggy.link',
+    'https://*.ngrok-free.app',
+    'https://*.onrender.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
 
-# Render sets this environment variable automatically for deployed services.
-RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='').strip()
-if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # Application definition
 INSTALLED_APPS = [
@@ -46,7 +49,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -68,6 +73,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'portal_app.context_processors.ui_badges',
             ],
         },
     },
@@ -132,7 +138,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('hi', _('Hindi')),
+    ('mr', _('Marathi')),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
 
 TIME_ZONE = 'Asia/Kolkata'
 
@@ -174,6 +190,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session expires when browser closes
 SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
 SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
 SESSION_COOKIE_NAME = 'gram_panchayat_sessionid'  # Custom session cookie name
+LANGUAGE_COOKIE_NAME = 'gram_panchayat_language'
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
+LANGUAGE_COOKIE_SAMESITE = 'Lax'
 
 # CSRF Protection
 CSRF_COOKIE_HTTPONLY = True  # Prevent JavaScript access to CSRF cookie
@@ -210,6 +229,20 @@ PROJECT_NAME = "Digital Gram Panchayat Portal"
 
 
 # ============================================
+# CHATBOT CONFIGURATION
+# ============================================
+
+CHATBOT_ENABLED = config('CHATBOT_ENABLED', default=True, cast=bool)
+CHATBOT_PROVIDER = config('CHATBOT_PROVIDER', default='openai').strip().lower()
+CHATBOT_TIMEOUT_SECONDS = config('CHATBOT_TIMEOUT_SECONDS', default=8, cast=int)
+CHATBOT_HISTORY_LIMIT = config('CHATBOT_HISTORY_LIMIT', default=8, cast=int)
+CHATBOT_OPENAI_API_KEY = config('OPENAI_API_KEY', default='').strip()
+CHATBOT_OPENAI_MODEL = config('OPENAI_MODEL', default='gpt-4o-mini').strip()
+CHATBOT_GEMINI_API_KEY = config('GEMINI_API_KEY', default='').strip()
+CHATBOT_GEMINI_MODEL = config('GEMINI_MODEL', default='gemini-1.5-flash').strip()
+
+
+# ============================================
 # EMAIL CONFIGURATION (OTP Verification)
 # ============================================
 
@@ -231,6 +264,7 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@grampanchayat.gov.in')
+EMAIL_FROM_NAME = config('EMAIL_FROM_NAME', default='Digital Grampanchayat Portal')
 
 # Email Settings
 EMAIL_TIMEOUT = 10  # seconds

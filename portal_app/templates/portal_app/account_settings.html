@@ -1,0 +1,258 @@
+{% extends "portal_app/dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+<link rel="stylesheet" href="{% static 'portal_app/css/account_settings_advanced.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="settings-shell dashboard-reveal" data-active-tab="{{ active_tab|default:'profile' }}">
+    <div class="settings-hero glass-card">
+        <div>
+            <span class="hero-kicker">Unified Settings</span>
+            <h2 class="mb-2">Account Settings</h2>
+            <p class="text-muted mb-0">One secure control center for profile, password security, and activity timeline.</p>
+        </div>
+        <div class="settings-user-chip">
+            <img
+                src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'images/no-img-avatar.png' %}{% endif %}"
+                alt="Current profile"
+                class="chip-avatar"
+            >
+            <div>
+                <div class="fw-semibold">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div class="small text-muted">{{ request.user.role|title }} account</div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} settings-alert" role="alert">{{ message|safe }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="settings-grid">
+        <aside class="settings-sidebar glass-card">
+            <button type="button" class="settings-tab-btn{% if active_tab == 'profile' %} active{% endif %}" data-settings-tab="profile">
+                <i class="fas fa-id-card"></i>
+                <span>Profile</span>
+            </button>
+            <button type="button" class="settings-tab-btn{% if active_tab == 'password' %} active{% endif %}" data-settings-tab="password">
+                <i class="fas fa-lock"></i>
+                <span>Password</span>
+            </button>
+            <button type="button" class="settings-tab-btn{% if active_tab == 'activity' %} active{% endif %}" data-settings-tab="activity">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span>Activity</span>
+            </button>
+
+            <div class="sidebar-meta mt-4">
+                <div class="small text-muted">Username</div>
+                <div class="fw-semibold mb-2">{{ request.user.username }}</div>
+                <div class="small text-muted">Email verification</div>
+                <div class="fw-semibold">{{ request.user.email_verified|yesno:"Verified,Pending" }}</div>
+            </div>
+        </aside>
+
+        <section class="settings-main">
+            <div class="tab-panel glass-card{% if active_tab == 'profile' %} is-active{% endif %}" data-tab-panel="profile">
+                <div class="panel-head">
+                    <h4 class="mb-1">Profile Information</h4>
+                    <p class="mb-0 text-muted">Update your name, email, phone and profile image.</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" id="profileSettingsForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="profile">
+                    <input type="hidden" name="active_tab" value="profile">
+                    <input type="hidden" name="profile_photo_cropped" id="profilePhotoCropped">
+
+                    <div class="profile-media-row">
+                        <img
+                            id="profilePreview"
+                            src="{% if request.user.profile_photo %}{{ request.user.profile_photo.url }}{% else %}{% static 'images/no-img-avatar.png' %}{% endif %}"
+                            alt="Profile image preview"
+                            class="profile-preview"
+                        >
+                        <div class="profile-upload-wrap">
+                            <label class="form-label">Profile Image</label>
+                            {{ settings_form.profile_photo }}
+                            <div class="form-text">Upload image, crop it, and save. Supported: JPG, PNG, WEBP.</div>
+                            {% if settings_form.profile_photo.errors %}<div class="text-danger small mt-1">{{ settings_form.profile_photo.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            {{ settings_form.first_name }}
+                            {% if settings_form.first_name.errors %}<div class="text-danger small mt-1">{{ settings_form.first_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            {{ settings_form.last_name }}
+                            {% if settings_form.last_name.errors %}<div class="text-danger small mt-1">{{ settings_form.last_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            {{ settings_form.email }}
+                            {% if settings_form.email.errors %}<div class="text-danger small mt-1">{{ settings_form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            {{ settings_form.phone_number }}
+                            {% if settings_form.phone_number.errors %}<div class="text-danger small mt-1">{{ settings_form.phone_number.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-2"></i>Save Profile</button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="danger-zone{% if not can_delete_account %} disabled{% endif %}">
+                    <div>
+                        <h6 class="text-danger mb-1">Delete Account</h6>
+                        {% if can_delete_account %}
+                            <p class="mb-0 text-muted small">This action is irreversible. You must confirm before deleting.</p>
+                        {% else %}
+                            <p class="mb-0 text-muted small">Main admin account is protected and cannot be deleted.</p>
+                        {% endif %}
+                    </div>
+                    <button type="button" class="btn btn-outline-danger" {% if can_delete_account %}data-bs-toggle="modal" data-bs-target="#deleteAccountModal"{% else %}disabled{% endif %}>
+                        <i class="fas fa-trash me-2"></i>Delete Account
+                    </button>
+                </div>
+            </div>
+
+            <div class="tab-panel glass-card{% if active_tab == 'password' %} is-active{% endif %}" data-tab-panel="password">
+                <div class="panel-head">
+                    <h4 class="mb-1">Change Password</h4>
+                    <p class="mb-0 text-muted">Use your current password and choose a stronger new one.</p>
+                </div>
+                <form method="post" id="passwordSettingsForm" class="mt-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="password">
+                    <input type="hidden" name="active_tab" value="password">
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Current Password</label>
+                            {{ password_form.current_password }}
+                            {% if password_form.current_password.errors %}<div class="text-danger small mt-1">{{ password_form.current_password.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">New Password</label>
+                            {{ password_form.new_password1 }}
+                            {% if password_form.new_password1.errors %}<div class="text-danger small mt-1">{{ password_form.new_password1.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm New Password</label>
+                            {{ password_form.new_password2 }}
+                            {% if password_form.new_password2.errors %}<div class="text-danger small mt-1">{{ password_form.new_password2.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-key me-2"></i>Update Password</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-panel glass-card{% if active_tab == 'activity' %} is-active{% endif %}" data-tab-panel="activity">
+                <div class="panel-head d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h4 class="mb-1">Activity History</h4>
+                        <p class="mb-0 text-muted">Your recent account and workflow actions.</p>
+                    </div>
+                    <a href="{% url 'activity_history' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-up-right-from-square me-1"></i>Open full history</a>
+                </div>
+
+                <div class="table-responsive mt-3">
+                    <table class="table settings-table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Description</th>
+                                <th>Date &amp; Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activities %}
+                                <tr>
+                                    <td><span class="activity-pill">{{ activity.get_action_display }}</span></td>
+                                    <td>{{ activity.description }}</td>
+                                    <td>{{ activity.created_at|date:"d M Y, h:i A" }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No activity logs found yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title text-danger">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <p class="text-muted mb-3">Type DELETE to confirm. This action permanently removes your account.</p>
+                <form method="post" action="{% url 'account_settings' %}" id="deleteAccountForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="active_tab" value="profile">
+                    <label class="form-label">{{ delete_form.confirmation.label }}</label>
+                    {{ delete_form.confirmation }}
+                    {% if delete_form.confirmation.errors %}<div class="text-danger small mt-1">{{ delete_form.confirmation.errors.0 }}</div>{% endif %}
+                </form>
+            </div>
+            <div class="modal-footer border-0 pt-1">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="deleteAccountForm" class="btn btn-danger">Delete Permanently</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content settings-modal">
+            <div class="modal-header border-0 pb-1">
+                <h5 class="modal-title">Crop Profile Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <div class="cropper-area">
+                    <img id="cropperSource" alt="Crop source preview">
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-1">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="applyCropButton">Apply Crop</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="{% static 'portal_app/js/account_settings_advanced.js' %}"></script>
+{% endblock %}

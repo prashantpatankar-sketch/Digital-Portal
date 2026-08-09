@@ -1,0 +1,70 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        Admin Dashboard
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h4 class="alert-heading">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Welcome, Admin!
+                        </h4>
+                        <p class="mb-0">{{ test_message }}</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="bi bi-file-earmark-text text-primary" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2">Applications</h5>
+                                    <p class="card-text">Manage all applications</p>
+                                    <a href="{% url 'admin_applications' %}" class="btn btn-primary">View Applications</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="bi bi-people text-success" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2">Users</h5>
+                                    <p class="card-text">Manage users</p>
+                                    <a href="{% url 'create_staff' %}" class="btn btn-success">Create Staff</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <i class="bi bi-megaphone text-warning" style="font-size: 2rem;"></i>
+                                    <h5 class="card-title mt-2">Complaints</h5>
+                                    <p class="card-text">Manage complaints</p>
+                                    <a href="{% url 'admin_complaints' %}" class="btn btn-warning">View Complaints</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+                            <i class="bi bi-box-arrow-right me-2"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

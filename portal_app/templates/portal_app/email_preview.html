@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Template Live Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Segoe UI, Tahoma, Arial, sans-serif;
+            background: linear-gradient(120deg, #e2e8f0, #f8fafc);
+            color: #0f172a;
+        }
+        .wrap {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+        .meta {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+        }
+        .meta h1 {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            color: #1e3a8a;
+        }
+        .meta p {
+            margin: 0;
+            color: #334155;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .preview-frame {
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #eef2f7;
+            min-height: 720px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="meta">
+            <h1>Digital Grampanchayat Email Preview</h1>
+            <p>This page previews the live HTML email template with sample OTP and official communication styling.</p>
+        </div>
+        <div class="preview-frame">
+            {{ preview_html|safe }}
+        </div>
+    </div>
+</body>
+</html>

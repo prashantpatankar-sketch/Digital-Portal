@@ -1,4 +1,4 @@
-{% extends 'portal_app/base.html' %}
+{% extends "portal_app/dashboard/base.html" %}
 
 {% block title %}Application Details{% endblock %}
 
@@ -97,6 +97,36 @@
                                 <tr>
                                     <th>Occupation</th>
                                     <td>{{ certificate_data.occupation }}</td>
+                                </tr>
+                            {% elif application.application_type == 'complaint_submission' %}
+                                <tr>
+                                    <th>Complaint Number</th>
+                                    <td>{{ certificate_data.complaint_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Category</th>
+                                    <td>{{ certificate_data.get_category_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Subject</th>
+                                    <td>{{ certificate_data.subject }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Priority</th>
+                                    <td>{{ certificate_data.get_priority_display }}</td>
+                                </tr>
+                            {% elif application.application_type == 'bill_request' %}
+                                <tr>
+                                    <th>Request Type</th>
+                                    <td>{{ certificate_data.get_request_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Reference Number</th>
+                                    <td>{{ certificate_data.account_or_consumer_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Subject</th>
+                                    <td>{{ certificate_data.subject }}</td>
                                 </tr>
                             {% endif %}
                         </table>

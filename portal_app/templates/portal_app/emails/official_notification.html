@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject_title }}</title>
+    <style>
+        @keyframes otpPulse {
+            0% { box-shadow: 0 0 0 0 rgba(30, 58, 138, 0.35); }
+            70% { box-shadow: 0 0 0 10px rgba(30, 58, 138, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(30, 58, 138, 0); }
+        }
+        .cta-btn:hover {
+            background-color: #172554 !important;
+        }
+        @media only screen and (max-width: 620px) {
+            .email-shell {
+                width: 100% !important;
+                border-radius: 0 !important;
+            }
+            .content-pad {
+                padding: 22px 18px !important;
+            }
+            .header-title {
+                font-size: 20px !important;
+            }
+            .otp-code {
+                font-size: 30px !important;
+                letter-spacing: 5px !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:0; background-color:#eef2f7; font-family:Segoe UI, Tahoma, Arial, sans-serif; color:#0f172a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eef2f7; padding:24px 10px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="620" cellpadding="0" cellspacing="0" border="0" class="email-shell" style="width:620px; max-width:620px; background-color:#ffffff; border:1px solid #dbe3ef; border-radius:14px; box-shadow:0 6px 24px rgba(15, 23, 42, 0.08); overflow:hidden;">
+                    <tr>
+                        <td style="padding:0; background-color:#1e3a8a;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td style="padding:16px 18px; width:66px; vertical-align:middle;">
+                                        <img src="{{ logo_data_uri }}" alt="Portal Logo" width="48" height="48" style="display:block; width:48px; height:48px; border:0; border-radius:10px;">
+                                    </td>
+                                    <td style="padding:16px 18px 16px 0; vertical-align:middle;">
+                                        <div class="header-title" style="font-size:24px; line-height:1.2; font-weight:700; color:#ffffff;">Digital Grampanchayat Portal</div>
+                                        <div style="margin-top:4px; font-size:13px; color:#dbeafe;">Official Citizen Communication</div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="content-pad" style="padding:28px 30px 12px 30px;">
+                            <p style="margin:0 0 14px 0; font-size:16px; line-height:1.6; color:#1f2937;">Dear {{ greeting_name|default:'User' }},</p>
+                            {% if intro_text %}
+                            <p style="margin:0 0 14px 0; font-size:15px; line-height:1.7; color:#334155;">{{ intro_text }}</p>
+                            {% endif %}
+                            {% for line in body_lines %}
+                            <p style="margin:0 0 14px 0; font-size:15px; line-height:1.7; color:#334155;">{{ line }}</p>
+                            {% endfor %}
+                        </td>
+                    </tr>
+
+                    {% if otp_code %}
+                    <tr>
+                        <td class="content-pad" style="padding:8px 30px 8px 30px;">
+                            <div style="background-color:#f8fafc; border:1px solid #cbd5e1; border-radius:12px; padding:18px; text-align:center;">
+                                <div style="font-size:12px; color:#334155; letter-spacing:1px; text-transform:uppercase; font-weight:600;">One-Time Password (OTP)</div>
+                                <div class="otp-code" style="margin-top:10px; padding:12px 10px; font-size:36px; line-height:1.2; font-weight:800; letter-spacing:8px; color:#1e3a8a; background-color:#e2e8f0; border:2px solid #1e3a8a; border-radius:10px; animation:otpPulse 2.4s ease-in-out infinite;">{{ otp_code }}</div>
+                                <div style="margin-top:10px; font-size:13px; color:#475569;">This OTP is valid for {{ otp_expiry_minutes }} minute{% if otp_expiry_minutes != 1 %}s{% endif %}. Please do not share it with anyone.</div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    {% if cta_text and cta_url %}
+                    <tr>
+                        <td class="content-pad" style="padding:16px 30px 8px 30px; text-align:center;">
+                            <a href="{{ cta_url }}" class="cta-btn" style="display:inline-block; background-color:#1e3a8a; color:#ffffff; text-decoration:none; font-size:14px; font-weight:600; padding:12px 22px; border-radius:8px;">{{ cta_text }}</a>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    {% if reference_text %}
+                    <tr>
+                        <td class="content-pad" style="padding:8px 30px 8px 30px;">
+                            <div style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 14px; font-size:13px; color:#475569;">
+                                {{ reference_text }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    <tr>
+                        <td class="content-pad" style="padding:10px 30px 22px 30px;">
+                            <p style="margin:0; font-size:14px; line-height:1.7; color:#334155;">{{ help_text }}</p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:14px 22px; background-color:#f1f5f9; border-top:1px solid #dbe3ef;">
+                            <p style="margin:0 0 6px 0; font-size:12px; color:#334155; font-weight:600;">{{ footer_note }}</p>
+                            <p style="margin:0; font-size:12px; color:#64748b;">Do not reply to this email.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

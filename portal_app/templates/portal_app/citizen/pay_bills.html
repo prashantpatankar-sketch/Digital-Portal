@@ -1,0 +1,101 @@
+{% extends "portal_app/base.html" %}
+
+{% block title %}Pay Bills{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge text-bg-primary rounded-pill mb-2">Payments</span>
+                <h1 class="mb-2 fw-bold">Pay Bills</h1>
+                <p class="mb-0 text-muted">Review pending dues and open the appropriate payment module for each service.</p>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'payments' %}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Back to Payments</a>
+                <a href="{% url 'payment_history' %}" class="btn btn-primary"><i class="bi bi-receipt me-2"></i>History</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-lightning-charge-fill me-2"></i>Electricity Bills</h5>
+                    <span class="badge text-bg-danger">{{ electricity_bills|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if electricity_bills %}
+                        <div class="list-group list-group-flush">
+                            {% for bill in electricity_bills %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 border-bottom">
+                                    <div>
+                                        <div class="fw-semibold">{{ bill.consumer_number }}</div>
+                                        <div class="text-muted small">{{ bill.get_payment_status_display }}</div>
+                                    </div>
+                                    <span class="fw-semibold">INR {{ bill.amount }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted"><i class="bi bi-check-circle fs-1 d-block mb-2"></i>No pending electricity bills.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-droplet-half me-2"></i>Water Bills</h5>
+                    <span class="badge text-bg-info">{{ water_bills|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if water_bills %}
+                        <div class="list-group list-group-flush">
+                            {% for bill in water_bills %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 border-bottom">
+                                    <div>
+                                        <div class="fw-semibold">{{ bill.connection_number }}</div>
+                                        <div class="text-muted small">{{ bill.get_payment_status_display }}</div>
+                                    </div>
+                                    <span class="fw-semibold">INR {{ bill.amount }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted"><i class="bi bi-check-circle fs-1 d-block mb-2"></i>No pending water bills.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-house-door-fill me-2"></i>Property Tax</h5>
+                    <span class="badge text-bg-primary">{{ property_taxes|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if property_taxes %}
+                        <div class="list-group list-group-flush">
+                            {% for item in property_taxes %}
+                                <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0 border-bottom">
+                                    <div>
+                                        <div class="fw-semibold">{{ item.property_number }}</div>
+                                        <div class="text-muted small">{{ item.get_payment_status_display }}</div>
+                                    </div>
+                                    <span class="fw-semibold">INR {{ item.tax_amount }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted"><i class="bi bi-check-circle fs-1 d-block mb-2"></i>No pending property tax.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

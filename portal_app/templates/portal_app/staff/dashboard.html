@@ -1,0 +1,204 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block title %}Staff Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal_app/css/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-bank2"></i>
+            <span>Gram Panchayat</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item active" href="{% url 'staff_dashboard' %}">
+                <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+            </a>
+            <a class="nav-item" href="{% url 'admin_applications' %}">
+                <i class="bi bi-file-earmark-check"></i><span>Applications</span>
+            </a>
+            <a class="nav-item" href="{% url 'admin_complaints' %}">
+                <i class="bi bi-megaphone"></i><span>Complaints</span>
+            </a>
+            <div class="nav-divider"></div>
+            <div class="nav-item disabled">
+                <i class="bi bi-shield-x"></i><span>Admin Only</span>
+            </div>
+            <a class="nav-item disabled" href="#" title="Admin Only">
+                <i class="bi bi-person-plus"></i><span>Create Staff</span>
+            </a>
+            <a class="nav-item disabled" href="/admin/" title="Admin Only">
+                <i class="bi bi-gear"></i><span>System Admin</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <span class="badge bg-warning text-dark">Staff Access</span>
+            <small>Limited Permissions</small>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <nav class="admin-topbar">
+            <button class="btn btn-light btn-sm" id="sidebarToggle" type="button">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="topbar-title">
+                <h5 class="mb-0">Staff Dashboard</h5>
+                <small>Application Processing</small>
+            </div>
+            <div class="topbar-actions">
+                <div class="dropdown">
+                    <button class="btn btn-outline-warning dropdown-toggle" data-bs-toggle="dropdown" type="button">
+                        <i class="bi bi-person-circle me-2"></i>{{ request.user.get_full_name|default:request.user.username }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <span class="dropdown-item-text">Role: <strong>Staff</strong></span>
+                        </li>
+                        <li>
+                            <span class="dropdown-item-text">Last login: {{ request.user.last_login|date:"d M Y, H:i" }}</span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="admin-content">
+            <div class="alert alert-warning mb-4">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Staff Access:</strong> You have limited permissions. Contact an administrator for system changes.
+            </div>
+
+            <div class="row g-3">
+                <div class="col-xl-3 col-md-6">
+                    <div class="summary-card">
+                        <div class="summary-icon bg-primary"><i class="bi bi-file-earmark-text"></i></div>
+                        <div>
+                            <p>Total Applications</p>
+                            <h3>{{ total_applications }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="summary-card">
+                        <div class="summary-icon bg-warning"><i class="bi bi-hourglass-split"></i></div>
+                        <div>
+                            <p>Pending</p>
+                            <h3>{{ pending_applications }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="summary-card">
+                        <div class="summary-icon bg-info"><i class="bi bi-eye"></i></div>
+                        <div>
+                            <p>Under Review</p>
+                            <h3>{{ under_review_applications }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="summary-card">
+                        <div class="summary-icon bg-success"><i class="bi bi-check-circle"></i></div>
+                        <div>
+                            <p>Approved</p>
+                            <h3>{{ approved_applications }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recent Applications</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_applications %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Application #</th>
+                                                <th>Type</th>
+                                                <th>Applicant</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for app in recent_applications %}
+                                            <tr>
+                                                <td>{{ app.application_number }}</td>
+                                                <td>{{ app.get_application_type_display }}</td>
+                                                <td>{{ app.applicant.get_full_name|default:app.applicant.username }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ app.status|status_color }}">
+                                                        {{ app.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ app.applied_date|date:"d M Y" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No applications found.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Quick Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'admin_applications' %}" class="btn btn-primary">
+                                    <i class="bi bi-list-check me-2"></i>View All Applications
+                                </a>
+                                <a href="{% url 'admin_complaints' %}" class="btn btn-info">
+                                    <i class="bi bi-megaphone me-2"></i>View Complaints
+                                </a>
+                                <button class="btn btn-outline-secondary" disabled>
+                                    <i class="bi bi-shield-x me-2"></i>Admin Functions Locked
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">Staff Permissions</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled small">
+                                <li class="text-success"><i class="bi bi-check-circle me-2"></i>View applications</li>
+                                <li class="text-success"><i class="bi bi-check-circle me-2"></i>Process applications</li>
+                                <li class="text-success"><i class="bi bi-check-circle me-2"></i>Update status</li>
+                                <li class="text-danger"><i class="bi bi-x-circle me-2"></i>Create admin accounts</li>
+                                <li class="text-danger"><i class="bi bi-x-circle me-2"></i>System settings</li>
+                                <li class="text-danger"><i class="bi bi-x-circle me-2"></i>Delete records</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

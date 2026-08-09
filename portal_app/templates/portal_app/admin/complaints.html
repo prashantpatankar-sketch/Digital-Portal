@@ -1,4 +1,4 @@
-{% extends 'portal_app/base.html' %}
+{% extends "portal_app/dashboard/base.html" %}
 
 {% block title %}Manage Complaints - Admin{% endblock %}
 
@@ -104,6 +104,9 @@
                     <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
                 </select>
             </div>
+                <div class="col-md-3">
+                    <input type="text" name="q" class="form-control" placeholder="Complaint no, subject, username" value="{{ search_query|default:'' }}">
+                </div>
             <div class="col-md-3">
                 <label class="form-label fw-bold">Category</label>
                 <select name="category" class="form-select" onchange="this.form.submit()">

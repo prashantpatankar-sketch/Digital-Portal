@@ -1,0 +1,104 @@
+{% extends 'portal_app/base.html' %}
+
+{% block title %}Profile - Digital Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge text-bg-primary rounded-pill mb-2">Account</span>
+                <h1 class="mb-2 fw-bold">My Profile</h1>
+                <p class="mb-0 text-muted">View account details and recent activity on a single dedicated page.</p>
+            </div>
+            <a href="{% url 'settings' %}" class="btn btn-primary"><i class="bi bi-gear me-2"></i>Open Settings</a>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="mx-auto mb-3" style="width:96px;height:96px;border-radius:50%;overflow:hidden;background:rgba(15,76,129,.08);display:grid;place-items:center;">
+                        {% if user.profile_photo %}
+                            <img src="{{ user.profile_photo.url }}" alt="Profile photo" style="width:100%;height:100%;object-fit:cover;">
+                        {% else %}
+                            <i class="bi bi-person-fill fs-1 text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted mb-0">{{ user.role|default:'Citizen'|title }} account</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-card-list me-2"></i>Account Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-3 bg-light h-100">
+                                <div class="text-muted small mb-1">Email</div>
+                                <div class="fw-semibold">{{ user.email|default:'-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-3 bg-light h-100">
+                                <div class="text-muted small mb-1">Phone</div>
+                                <div class="fw-semibold">{{ user.phone_number|default:'-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-3 bg-light h-100">
+                                <div class="text-muted small mb-1">Village</div>
+                                <div class="fw-semibold">{{ user.village|default:'-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-3 bg-light h-100">
+                                <div class="text-muted small mb-1">District</div>
+                                <div class="fw-semibold">{{ user.district|default:'-' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="border rounded-4 p-3 bg-light">
+                                <div class="text-muted small mb-1">Address</div>
+                                <div class="fw-semibold">{{ user.address|default:'-' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Activity</h5>
+            <a href="{% url 'activity_history' %}" class="btn btn-outline-primary btn-sm">View full history</a>
+        </div>
+        <div class="card-body">
+            {% if recent_activities %}
+                <div class="list-group list-group-flush">
+                    {% for item in recent_activities %}
+                        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-start gap-3 border-0 border-bottom">
+                            <div>
+                                <div class="fw-semibold">{{ item.get_action_display }}</div>
+                                <div class="text-muted small">{{ item.description }}</div>
+                            </div>
+                            <small class="text-muted text-nowrap">{{ item.created_at|date:"d M Y, H:i" }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    No recent activity yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>जन्म प्रमाणपत्र</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+            @bottom-center {
+                content: "";
+                font-size: 10px;
+                color: #666;
+            }
+        }
+        
+        body {
+            font-family: 'Shivaji', 'Arial Unicode MS', serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #000;
+            background: white;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .certificate-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        
+        .gov-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .certificate-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-decoration: underline;
+        }
+        
+        .details-section {
+            margin: 30px 0;
+            text-align: justify;
+        }
+        
+        .certification-text {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        
+        .details-grid {
+            margin: 20px 0;
+        }
+        
+        .detail-row {
+            margin: 8px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            min-width: 150px;
+            margin-right: 10px;
+        }
+        
+        .detail-value {
+            flex: 1;
+            border-bottom: 1px dotted #666;
+            min-height: 20px;
+        }
+        
+        .footer-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        .signatures {
+            text-align: right;
+        }
+        
+        .signature-line {
+            margin: 30px 0 5px 0;
+            border-bottom: 1px solid #000;
+            width: 200px;
+            margin-left: auto;
+        }
+        
+        .signature-title {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        .certificate-meta {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .certificate-container {
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate-container">
+        <!-- OFFICIAL HEADER -->
+        <div class="header">
+            <div class="gov-header">महाराष्ट्र शासन</div>
+            <div>जिल्हा: {{ district|default:"________" }}</div>
+            <div>तालुका: {{ taluka|default:"________" }}</div>
+            <div>ग्रामपंचायत: {{ gram_panchayat|default:"________" }}</div>
+            
+            <div class="certificate-title">जन्म प्रमाणपत्र</div>
+        </div>
+
+        <!-- CERTIFICATE BODY -->
+        <div class="details-section">
+            <div class="certification-text">
+                ही प्रमाणित करण्यात येते की, खालील माहिती प्रमाणे जन्म नोंदविण्यात आला आहे.
+                श्री./श्रीमती <strong>{{ child_name }}</strong> यांचा जन्म <strong>{{ date_of_birth|date:"d/m/Y" }}</strong> 
+                रोजी <strong>{{ place_of_birth }}</strong> येथे झाला आहे.
+            </div>
+            
+            <div class="certification-text">
+                बालकाचे लिंग <strong>{{ child_gender_display }}</strong> असून वडील <strong>{{ father_name }}</strong> 
+                आणि आई <strong>{{ mother_name }}</strong> यांच्या पोटी जन्म झाला आहे.
+            </div>
+        </div>
+
+        <!-- CERTIFICATE DETAILS -->
+        <div class="certificate-meta">
+            <div class="detail-row">
+                <span class="detail-label">प्रमाणपत्र क्रमांक:</span>
+                <span class="detail-value">{{ certificate_number }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">दिनांक:</span>
+                <span class="detail-value">{{ issued_date|date:"d/m/Y" }}</span>
+            </div>
+        </div>
+
+        <!-- PERSONAL DETAILS -->
+        <div class="details-grid">
+            <div class="detail-row">
+                <span class="detail-label">बालकाचे नाव:</span>
+                <span class="detail-value">{{ child_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">जन्म दिनांक:</span>
+                <span class="detail-value">{{ date_of_birth|date:"d/m/Y" }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">लिंग:</span>
+                <span class="detail-value">{{ child_gender_display }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">जन्म स्थान:</span>
+                <span class="detail-value">{{ place_of_birth }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">वडिलांचे नाव:</span>
+                <span class="detail-value">{{ father_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">आईचे नाव:</span>
+                <span class="detail-value">{{ mother_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">कायमचा पत्ता:</span>
+                <span class="detail-value">{{ permanent_address }}</span>
+            </div>
+        </div>
+
+        <!-- SIGNATURE & SEAL SECTION -->
+        <div class="footer-section">
+            <div class="qr-code">
+                QR Code<br>
+                {{ certificate_number }}
+            </div>
+            
+            <div class="signatures">
+                <div class="signature-line"></div>
+                <div class="signature-title">ग्रामसेवक सही</div>
+                
+                <div class="signature-line"></div>
+                <div class="signature-title">सरपंच सही</div>
+                
+                <div class="signature-line"></div>
+                <div class="signature-title">अधिकृत शिक्का</div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer-note">
+            हे प्रमाणपत्र संगणकाद्वारे तयार केलेले असून त्यासाठी स्वाक्षरी आवश्यक नाही.
+        </div>
+    </div>
+</body>
+</html>

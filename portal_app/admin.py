@@ -7,8 +7,10 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     CustomUser, Application, BirthCertificate, DeathCertificate,
     IncomeCertificate, TaxPayment, Complaint, ApplicationStatusHistory,
-    ComplaintHistory, EmailOTP
+    ComplaintHistory, EmailOTP, ElectricityBill, WaterBill, PropertyTaxRecord,
+    BillRequest, Notification, UserActivity
 )
+from .signature_models import Signature
 
 
 # ============================================
@@ -20,14 +22,14 @@ class CustomUserAdmin(UserAdmin):
     """
     Custom admin interface for CustomUser model
     """
-    list_display = ['username', 'email', 'first_name', 'last_name', 'role', 'phone_number', 'email_verified', 'is_active', 'created_at']
+    list_display = ['username', 'name', 'email', 'first_name', 'last_name', 'role', 'phone_number', 'email_verified', 'is_active', 'created_at']
     list_filter = ['role', 'email_verified', 'is_active', 'is_staff', 'created_at']
-    search_fields = ['username', 'email', 'first_name', 'last_name', 'phone_number', 'aadhar_number']
+    search_fields = ['username', 'name', 'email', 'first_name', 'last_name', 'phone_number', 'aadhar_number']
     ordering = ['-created_at']
     
     fieldsets = UserAdmin.fieldsets + (
         ('Additional Information', {
-            'fields': ('role', 'phone_number', 'aadhar_number', 'date_of_birth', 'profile_photo', 'is_verified')
+            'fields': ('name', 'role', 'phone_number', 'aadhar_number', 'date_of_birth', 'profile_photo', 'is_verified')
         }),
         ('Email Verification', {
             'fields': ('email_verified', 'email_verified_at')
@@ -39,7 +41,7 @@ class CustomUserAdmin(UserAdmin):
     
     add_fieldsets = UserAdmin.add_fieldsets + (
         ('Additional Information', {
-            'fields': ('role', 'phone_number', 'email', 'first_name', 'last_name')
+            'fields': ('name', 'role', 'phone_number', 'email', 'first_name', 'last_name')
         }),
     )
 
@@ -53,7 +55,10 @@ class ApplicationAdmin(admin.ModelAdmin):
     """
     Admin interface for Application model
     """
-    list_display = ['application_number', 'applicant', 'application_type', 'status', 'applied_date', 'reviewed_by']
+    list_display = [
+        'application_number', 'applicant', 'application_type', 'status',
+        'email_delivery_status', 'applied_date', 'reviewed_by'
+    ]
     list_filter = ['status', 'application_type', 'applied_date']
     search_fields = ['application_number', 'applicant__username', 'applicant__email']
     readonly_fields = ['application_number', 'applied_date']
@@ -65,6 +70,9 @@ class ApplicationAdmin(admin.ModelAdmin):
         }),
         ('Tracking', {
             'fields': ('applied_date', 'reviewed_date', 'reviewed_by', 'admin_remarks')
+        }),
+        ('Certificate And Email', {
+            'fields': ('certificate_pdf', 'email_delivery_status', 'approval_email_sent_at', 'email_delivery_error')
         }),
     )
 
@@ -125,6 +133,38 @@ class TaxPaymentAdmin(admin.ModelAdmin):
     ordering = ['-application__applied_date']
 
 
+@admin.register(ElectricityBill)
+class ElectricityBillAdmin(admin.ModelAdmin):
+    list_display = ['consumer_number', 'bill_month', 'user', 'amount', 'due_date', 'payment_status', 'transaction_id']
+    list_filter = ['payment_status', 'bill_month', 'due_date']
+    search_fields = ['consumer_number', 'user__username', 'user__email', 'transaction_id']
+    ordering = ['-generated_at']
+
+
+@admin.register(WaterBill)
+class WaterBillAdmin(admin.ModelAdmin):
+    list_display = ['connection_number', 'bill_month', 'user', 'amount', 'due_date', 'payment_status', 'transaction_id']
+    list_filter = ['payment_status', 'bill_month', 'due_date']
+    search_fields = ['connection_number', 'user__username', 'user__email', 'transaction_id']
+    ordering = ['-generated_at']
+
+
+@admin.register(PropertyTaxRecord)
+class PropertyTaxRecordAdmin(admin.ModelAdmin):
+    list_display = ['property_number', 'tax_year', 'user', 'tax_amount', 'due_date', 'payment_status', 'transaction_id']
+    list_filter = ['payment_status', 'property_type', 'tax_year', 'due_date']
+    search_fields = ['property_number', 'owner_name', 'user__username', 'user__email', 'transaction_id']
+    ordering = ['-created_at']
+
+
+@admin.register(BillRequest)
+class BillRequestAdmin(admin.ModelAdmin):
+    list_display = ['application', 'request_type', 'account_or_consumer_number', 'subject']
+    list_filter = ['request_type']
+    search_fields = ['application__application_number', 'subject', 'account_or_consumer_number']
+    ordering = ['-application__applied_date']
+
+
 # ============================================
 # COMPLAINT ADMIN
 # ============================================
@@ -134,7 +174,7 @@ class ComplaintAdmin(admin.ModelAdmin):
     """
     Admin interface for Complaint
     """
-    list_display = ['complaint_number', 'complainant', 'category', 'subject', 'priority', 'status', 'filed_date']
+    list_display = ['complaint_number', 'complainant', 'application', 'category', 'subject', 'priority', 'status', 'filed_date']
     list_filter = ['status', 'priority', 'category', 'filed_date']
     search_fields = ['complaint_number', 'subject', 'complainant__username']
     readonly_fields = ['complaint_number', 'filed_date']
@@ -245,4 +285,43 @@ class EmailOTPAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         """Make OTPs read-only"""
         return False
+
+
+@admin.register(Signature)
+class SignatureAdmin(admin.ModelAdmin):
+    list_display = ['user', 'role', 'uploaded_at']
+    list_filter = ['role', 'uploaded_at']
+    search_fields = ['user__username', 'user__email', 'role']
+    readonly_fields = ['uploaded_at']
+
+    def has_change_permission(self, request, obj=None):
+        # Only superusers can edit
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        # Only superusers can delete
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        # Only staff/admin can add
+        return request.user.is_staff or request.user.is_superuser
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['recipient', 'title', 'category', 'is_read', 'created_at']
+    list_filter = ['category', 'is_read', 'created_at']
+    search_fields = ['recipient__username', 'recipient__email', 'title', 'message']
+    readonly_fields = ['created_at', 'read_at']
+    ordering = ['-created_at']
+
+
+@admin.register(UserActivity)
+class UserActivityAdmin(admin.ModelAdmin):
+    list_display = ['user', 'action', 'description', 'reference', 'created_at']
+    list_filter = ['action', 'created_at']
+    search_fields = ['user__username', 'description', 'reference']
+    readonly_fields = ['created_at']
+    ordering = ['-created_at']
+
 

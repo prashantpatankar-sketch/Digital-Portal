@@ -484,6 +484,54 @@ def generate_otp():
     return str(secrets.randbelow(900000) + 100000)
 
 
+# OTP security configuration
+OTP_LENGTH = 6
+OTP_EXPIRY_SECONDS = 5 * 60
+OTP_MAX_ATTEMPTS = 3
+OTP_BLOCK_SECONDS = 15 * 60
+OTP_RESEND_COOLDOWN_SECONDS = 60
+
+
+def _otp_block_cache_key(user_id):
+    return f"otp_block_until_{user_id}"
+
+
+def _otp_failed_attempts_cache_key(user_id):
+    return f"otp_failed_attempts_{user_id}"
+
+
+def get_otp_block_seconds_remaining(user):
+    """Return remaining block duration in seconds for this user."""
+    from django.utils import timezone
+
+    blocked_until = cache.get(_otp_block_cache_key(user.id))
+    if not blocked_until:
+        return 0
+
+    remaining = int((blocked_until - timezone.now()).total_seconds())
+    return max(0, remaining)
+
+
+def is_otp_user_temporarily_blocked(user):
+    """Check whether OTP verification is temporarily blocked for this user."""
+    return get_otp_block_seconds_remaining(user) > 0
+
+
+def _set_otp_temporary_block(user, seconds=OTP_BLOCK_SECONDS):
+    """Temporarily block OTP verification and resend for a user."""
+    from django.utils import timezone
+    from datetime import timedelta
+
+    blocked_until = timezone.now() + timedelta(seconds=seconds)
+    cache.set(_otp_block_cache_key(user.id), blocked_until, timeout=seconds)
+
+
+def _clear_otp_temporary_block(user):
+    """Clear OTP temporary block state for a user."""
+    cache.delete(_otp_block_cache_key(user.id))
+    cache.delete(_otp_failed_attempts_cache_key(user.id))
+
+
 def create_otp_for_user(user):
     """
     Create OTP record for user email verification
@@ -496,29 +544,30 @@ def create_otp_for_user(user):
     
     Security:
         - Invalidates all previous OTPs for same user
-        - Sets 10-minute expiration
+        - Sets 5-minute expiration
         - Logs OTP generation event
     """
     from .models import EmailOTP
     from django.utils import timezone
     from datetime import timedelta
     
-    # Invalidate all previous OTPs for this user
-    EmailOTP.objects.filter(
-        user=user,
-        is_verified=False
-    ).update(is_used=True)
+    # Remove old OTP rows to prevent conflicts during verification.
+    EmailOTP.objects.filter(user=user).delete()
     
     # Generate new OTP
     otp_code = generate_otp()
     
-    # Create OTP record
-    otp = EmailOTP.objects.create(
+    # Create OTP record (store OTP as hash, never in plaintext)
+    otp = EmailOTP(
         user=user,
         email=user.email,
-        otp_code=otp_code,
-        expires_at=timezone.now() + timedelta(minutes=10)
+        expires_at=timezone.now() + timedelta(seconds=OTP_EXPIRY_SECONDS)
     )
+    otp.set_otp_code(otp_code)
+    otp.save()
+
+    # Keep raw OTP only in-memory for email delivery.
+    otp.raw_otp_code = otp_code
     
     # Log OTP generation
     log_security_event(
@@ -552,11 +601,20 @@ def verify_otp(user, otp_code):
     from django.utils import timezone
     
     try:
+        otp_code = str(otp_code or '').strip()
+
+        # If user is temporarily blocked, stop verification attempts.
+        if is_otp_user_temporarily_blocked(user):
+            remaining = get_otp_block_seconds_remaining(user)
+            mins = (remaining + 59) // 60
+            return False, f"Too many failed attempts. Try again in {mins} minute(s)."
+
+        # Reject malformed OTP early.
+        if len(otp_code) != OTP_LENGTH or not otp_code.isdigit():
+            return False, "Enter a valid 6-digit OTP code."
+
         # Get the latest OTP for user
-        otp = EmailOTP.objects.filter(
-            user=user,
-            is_used=False
-        ).order_by('-created_at').first()
+        otp = EmailOTP.objects.filter(user=user).order_by('-id').first()
         
         if not otp:
             log_security_event(
@@ -569,18 +627,22 @@ def verify_otp(user, otp_code):
         
         # Check if OTP is expired
         if timezone.now() > otp.expires_at:
+            otp.is_used = True
+            otp.save(update_fields=['is_used'])
+
             log_security_event(
                 'OTP_EXPIRED',
                 user.username,
                 f"OTP expired at {otp.expires_at}",
                 'WARNING'
             )
-            return False, "OTP has expired. Please request a new one."
+            return False, "OTP expired after 5 minutes. Please click Resend OTP."
         
         # Check attempt limit (max 3 attempts)
-        if otp.verification_attempts >= 3:
+        if otp.verification_attempts >= OTP_MAX_ATTEMPTS:
             otp.is_used = True
-            otp.save()
+            otp.save(update_fields=['is_used'])
+            _set_otp_temporary_block(user)
             
             log_security_event(
                 'OTP_MAX_ATTEMPTS',
@@ -588,15 +650,22 @@ def verify_otp(user, otp_code):
                 "Maximum verification attempts exceeded",
                 'WARNING'
             )
-            return False, "Maximum attempts exceeded. Please request a new OTP."
+            return False, "Maximum attempts exceeded. OTP verification is temporarily blocked for 15 minutes."
         
         # Increment attempts
         otp.increment_attempts()
         
         # Verify OTP code
-        if otp.otp_code == otp_code:
+        entered_otp = str(otp_code).strip()
+        stored_otp = str(otp.otp_code).strip()
+        otp_matches = (entered_otp == stored_otp)
+        if hasattr(otp, 'verify_otp_code'):
+            otp_matches = otp.verify_otp_code(entered_otp)
+
+        if otp_matches:
             # Mark OTP as verified
             otp.mark_as_verified()
+            _clear_otp_temporary_block(user)
             
             # Update user email verification
             user.email_verified = True
@@ -623,6 +692,9 @@ def verify_otp(user, otp_code):
             
             return True, activation_msg
         else:
+            failed_count = cache.get(_otp_failed_attempts_cache_key(user.id), 0) + 1
+            cache.set(_otp_failed_attempts_cache_key(user.id), failed_count, timeout=OTP_BLOCK_SECONDS)
+
             log_security_event(
                 'OTP_VERIFICATION_FAILED',
                 user.username,
@@ -630,7 +702,13 @@ def verify_otp(user, otp_code):
                 'WARNING'
             )
             
-            attempts_left = 3 - otp.verification_attempts
+            attempts_left = OTP_MAX_ATTEMPTS - otp.verification_attempts
+            if attempts_left <= 0:
+                otp.is_used = True
+                otp.save(update_fields=['is_used'])
+                _set_otp_temporary_block(user)
+                return False, "Maximum attempts exceeded. OTP verification is temporarily blocked for 15 minutes."
+
             return False, f"Invalid OTP code. {attempts_left} attempt(s) remaining."
     
     except Exception as e:
@@ -659,33 +737,34 @@ def send_otp_email(user, otp_code):
         - Does not expose OTP in logs
         - Includes expiration time in email
     """
-    from django.core.mail import send_mail
     from django.conf import settings
-    from django.template.loader import render_to_string
-    from django.utils.html import strip_tags
+    from .email_utils import send_official_email
+
+    if not otp_code:
+        log_security_event(
+            'OTP_EMAIL_FAILED',
+            user.username,
+            "Missing OTP code for email delivery",
+            'ERROR'
+        )
+        return False
     
     try:
         # Email subject
         subject = f"Email Verification OTP - {settings.PROJECT_NAME if hasattr(settings, 'PROJECT_NAME') else 'Digital Gram Panchayat Portal'}"
-        
-        # Email body (HTML)
-        html_message = render_to_string('portal_app/emails/otp_verification.html', {
-            'user': user,
-            'otp_code': otp_code,
-            'expiry_minutes': 10,
-        })
-        
-        # Plain text version
-        plain_message = strip_tags(html_message)
-        
-        # Send email
-        send_mail(
+
+        send_official_email(
+            to_email=user.email,
             subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            html_message=html_message,
-            fail_silently=False,
+            greeting_name='User',
+            intro_text='Please complete your email verification for Digital Grampanchayat Portal.',
+            body_lines=[
+                'Use the OTP below to verify your account securely.',
+                'For your security, do not share this OTP with anyone.'
+            ],
+            otp_code=otp_code,
+            otp_expiry_minutes=5,
+            help_text='If this request was not made by you, please ignore this email.',
         )
         
         log_security_event(
@@ -725,11 +804,16 @@ def resend_otp(user):
     from .models import EmailOTP
     from django.utils import timezone
     from datetime import timedelta
+
+    if is_otp_user_temporarily_blocked(user):
+        remaining = get_otp_block_seconds_remaining(user)
+        mins = (remaining + 59) // 60
+        return False, f"Resend is temporarily blocked due to failed OTP attempts. Try again in {mins} minute(s)."
     
     # Check if user recently requested OTP (rate limiting)
     recent_otp = EmailOTP.objects.filter(
         user=user,
-        created_at__gte=timezone.now() - timedelta(minutes=1)
+        created_at__gte=timezone.now() - timedelta(seconds=OTP_RESEND_COOLDOWN_SECONDS)
     ).first()
     
     if recent_otp:
@@ -745,7 +829,7 @@ def resend_otp(user):
     otp = create_otp_for_user(user)
     
     # Send OTP email
-    if send_otp_email(user, otp.otp_code):
-        return True, f"A new OTP has been sent to {user.email}"
+    if send_otp_email(user, getattr(otp, 'raw_otp_code', None)):
+        return True, f"A new OTP (valid for 5 minutes) has been sent to {user.email}"
     else:
         return False, "Failed to send OTP email. Please try again later."

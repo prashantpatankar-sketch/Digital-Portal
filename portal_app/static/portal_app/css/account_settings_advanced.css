@@ -1,0 +1,232 @@
+.settings-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.glass-card {
+    border: 1px solid var(--dash-border);
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.86), rgba(233, 244, 255, 0.72));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 20px;
+    box-shadow: 0 14px 28px rgba(15, 76, 129, 0.12);
+}
+
+.settings-hero {
+    padding: 1.15rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.settings-user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--dash-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 0.45rem 0.8rem 0.45rem 0.45rem;
+}
+
+.chip-avatar {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.settings-sidebar {
+    padding: 0.95rem;
+    height: fit-content;
+    position: sticky;
+    top: 152px;
+}
+
+.settings-tab-btn {
+    width: 100%;
+    border: 1px solid var(--dash-border);
+    background: rgba(255, 255, 255, 0.58);
+    color: var(--dash-text);
+    border-radius: 14px;
+    text-align: left;
+    padding: 0.65rem 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.45rem;
+    font-weight: 600;
+    transition: all 0.16s ease;
+}
+
+.settings-tab-btn:hover,
+.settings-tab-btn.active {
+    border-color: rgba(30, 123, 166, 0.55);
+    background: rgba(21, 117, 165, 0.12);
+    transform: translateY(-1px);
+}
+
+.settings-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tab-panel {
+    display: none;
+    padding: 1.15rem;
+    animation: settingsFade 220ms ease;
+}
+
+.tab-panel.is-active {
+    display: block;
+}
+
+.panel-head h4 {
+    font-size: 1.1rem;
+}
+
+.profile-media-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+}
+
+.profile-preview {
+    width: 108px;
+    height: 108px;
+    border-radius: 24px;
+    object-fit: cover;
+    border: 1px solid var(--dash-border);
+    box-shadow: var(--dash-shadow);
+}
+
+.profile-upload-wrap input[type="file"] {
+    width: 100%;
+}
+
+.danger-zone {
+    border: 1px dashed rgba(220, 53, 69, 0.42);
+    background: rgba(220, 53, 69, 0.05);
+    border-radius: 14px;
+    padding: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.danger-zone.disabled {
+    opacity: 0.75;
+}
+
+.settings-table thead th {
+    border-top: none;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--dash-muted);
+}
+
+.settings-table tbody td {
+    border-color: var(--dash-border);
+}
+
+.activity-pill {
+    display: inline-block;
+    border-radius: 999px;
+    border: 1px solid var(--dash-border);
+    background: rgba(255, 255, 255, 0.66);
+    padding: 0.16rem 0.62rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+}
+
+.settings-modal {
+    border: none;
+    border-radius: 18px;
+    background: linear-gradient(160deg, #ffffff, #f3f8ff);
+}
+
+.cropper-area {
+    width: 100%;
+    min-height: 330px;
+    max-height: 62vh;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid var(--dash-border);
+    background: #f7fbff;
+}
+
+.cropper-area img {
+    width: 100%;
+    display: block;
+    max-height: 62vh;
+}
+
+.settings-alert {
+    border-radius: 14px;
+}
+
+@keyframes settingsFade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 991px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-sidebar {
+        position: static;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem;
+    }
+
+    .settings-tab-btn {
+        margin-bottom: 0;
+        justify-content: center;
+    }
+
+    .sidebar-meta {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-media-row {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-preview {
+        width: 94px;
+        height: 94px;
+    }
+
+    .danger-zone {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .settings-hero {
+        padding: 1rem;
+    }
+}

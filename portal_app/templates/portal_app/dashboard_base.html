@@ -1,0 +1,736 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal_app/css/modern-portal.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Dashboard Layout Styles */
+    .dashboard-layout {
+        display: flex;
+        min-height: 100vh;
+        margin-top: 0;
+        padding-top: 0;
+    }
+    
+    .dashboard-sidebar {
+        width: 280px;
+        background: linear-gradient(135deg, #1a3a5f 0%, #0d6efd 100%);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        overflow-y: auto;
+    }
+    
+    .dashboard-sidebar.collapsed {
+        width: 80px;
+    }
+    
+    .dashboard-main {
+        margin-left: 280px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-sidebar.collapsed + .dashboard-main {
+        margin-left: 80px;
+    }
+    
+    .dashboard-topbar {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1rem 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .dashboard-content {
+        flex: 1;
+        padding: 2rem;
+        background: #f4f6f9;
+        min-height: calc(100vh - 70px);
+    }
+    
+    /* Sidebar Styles */
+    .sidebar-header {
+        padding: 2rem 1.5rem;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .sidebar-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        color: white;
+        text-decoration: none;
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+    
+    .sidebar-logo i {
+        font-size: 2rem;
+        color: #ffc107;
+    }
+    
+    .sidebar-nav {
+        padding: 1.5rem 0;
+    }
+    
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        color: rgba(255,255,255,0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+        margin: 0.25rem 0;
+    }
+    
+    .nav-item:hover {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border-left-color: #ffc107;
+        transform: translateX(5px);
+    }
+    
+    .nav-item.active {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border-left-color: #ffc107;
+    }
+    
+    .nav-item i {
+        width: 24px;
+        margin-right: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .sidebar-text {
+        transition: opacity 0.3s ease;
+    }
+    
+    .dashboard-sidebar.collapsed .sidebar-text {
+        opacity: 0;
+        visibility: hidden;
+    }
+    
+    /* Topbar Styles */
+    .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .sidebar-toggle {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #333;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .sidebar-toggle:hover {
+        background: #f4f6f9;
+    }
+    
+    .topbar-search {
+        position: relative;
+        width: 300px;
+    }
+    
+    .topbar-search input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .topbar-search input:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+    }
+    
+    .topbar-search i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .notification-bell {
+        position: relative;
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #333;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-bell:hover {
+        background: #f4f6f9;
+    }
+    
+    .notification-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: #dc3545;
+        color: white;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+    }
+    
+    .user-dropdown {
+        position: relative;
+    }
+    
+    .user-avatar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+        background: #e9ecef;
+    }
+    
+    .user-avatar img {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-info {
+        text-align: left;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .user-role {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin: 0;
+    }
+    
+    /* Content Styles */
+    .content-header {
+        margin-bottom: 2rem;
+    }
+    
+    .content-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .content-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    /* Loading Spinner */
+    .loading-spinner {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+    
+    .loading-spinner.active {
+        display: block;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #0d6efd;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Notification Dropdown */
+    .notification-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+        margin-top: 0.5rem;
+    }
+    
+    .notification-dropdown.show {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .notification-item {
+        padding: 1rem;
+        border-bottom: 1px solid #f4f6f9;
+        transition: background 0.3s ease;
+    }
+    
+    .notification-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+    
+    .notification-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+    
+    .notification-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .notification-time {
+        color: #adb5bd;
+        font-size: 0.8rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .dashboard-sidebar {
+            transform: translateX(-100%);
+        }
+        
+        .dashboard-sidebar.show {
+            transform: translateX(0);
+        }
+        
+        .dashboard-main {
+            margin-left: 0;
+        }
+        
+        .topbar-search {
+            width: 200px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-content {
+            padding: 1rem;
+        }
+        
+        .topbar-search {
+            display: none;
+        }
+        
+        .dashboard-topbar {
+            padding: 1rem;
+        }
+        
+        .notification-dropdown {
+            width: 300px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .user-info {
+            display: none;
+        }
+        
+        .content-title {
+            font-size: 1.5rem;
+        }
+        
+        .dashboard-sidebar {
+            width: 100%;
+            max-width: 280px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">
+                <i class="fas fa-landmark"></i>
+                <span class="sidebar-text">Gram Panchayat</span>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            {% if user.role == 'admin' %}
+                <a href="{% url 'admin_dashboard' %}" class="nav-item" data-page="admin_dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="{% url 'admin_applications' %}" class="nav-item" data-page="admin_applications">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="sidebar-text">Applications</span>
+                </a>
+                <a href="{% url 'admin_complaints' %}" class="nav-item" data-page="admin_complaints">
+                    <i class="fas fa-megaphone"></i>
+                    <span class="sidebar-text">Complaints</span>
+                </a>
+                <a href="{% url 'create_staff' %}" class="nav-item" data-page="create_staff">
+                    <i class="fas fa-user-plus"></i>
+                    <span class="sidebar-text">Create Staff</span>
+                </a>
+                <a href="{% url 'system_admin_panel' %}" class="nav-item" data-page="system_admin_panel">
+                    <i class="fas fa-cog"></i>
+                    <span class="sidebar-text">System Admin</span>
+                </a>
+            {% elif user.role == 'staff' %}
+                <a href="{% url 'staff_dashboard' %}" class="nav-item" data-page="staff_dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="{% url 'admin_applications' %}" class="nav-item" data-page="admin_applications">
+                    <i class="fas fa-file-alt"></i>
+                    <span class="sidebar-text">Applications</span>
+                </a>
+                <a href="{% url 'admin_complaints' %}" class="nav-item" data-page="admin_complaints">
+                    <i class="fas fa-megaphone"></i>
+                    <span class="sidebar-text">Complaints</span>
+                </a>
+            {% else %}
+                <a href="{% url 'dashboard' %}" class="nav-item" data-page="citizen_dashboard">
+                    <i class="fas fa-home"></i>
+                    <span class="sidebar-text">Dashboard</span>
+                </a>
+                <a href="{% url 'apply_birth_certificate' %}" class="nav-item" data-page="apply_birth_certificate">
+                    <i class="fas fa-baby"></i>
+                    <span class="sidebar-text">Birth Certificate</span>
+                </a>
+                <a href="{% url 'apply_death_certificate' %}" class="nav-item" data-page="apply_death_certificate">
+                    <i class="fas fa-cross"></i>
+                    <span class="sidebar-text">Death Certificate</span>
+                </a>
+                <a href="{% url 'apply_income_certificate' %}" class="nav-item" data-page="apply_income_certificate">
+                    <i class="fas fa-money-bill"></i>
+                    <span class="sidebar-text">Income Certificate</span>
+                </a>
+                <a href="{% url 'file_complaint' %}" class="nav-item" data-page="file_complaint">
+                    <i class="fas fa-megaphone"></i>
+                    <span class="sidebar-text">File Complaint</span>
+                </a>
+                <a href="{% url 'electricity_bill_service' %}" class="nav-item" data-page="electricity_bill_service">
+                    <i class="fas fa-bolt"></i>
+                    <span class="sidebar-text">Electricity Bill</span>
+                </a>
+                <a href="{% url 'water_bill_service' %}" class="nav-item" data-page="water_bill_service">
+                    <i class="fas fa-tint"></i>
+                    <span class="sidebar-text">Water Bill</span>
+                </a>
+                <a href="{% url 'property_tax_service' %}" class="nav-item" data-page="property_tax_service">
+                    <i class="fas fa-home"></i>
+                    <span class="sidebar-text">Property Tax</span>
+                </a>
+                <a href="{% url 'my_applications' %}" class="nav-item" data-page="my_applications">
+                    <i class="fas fa-list"></i>
+                    <span class="sidebar-text">My Applications</span>
+                </a>
+                <a href="{% url 'my_certificates' %}" class="nav-item" data-page="my_certificates">
+                    <i class="fas fa-certificate"></i>
+                    <span class="sidebar-text">My Certificates</span>
+                </a>
+                <a href="{% url 'submit_bill_request' %}" class="nav-item" data-page="submit_bill_request">
+                    <i class="fas fa-file-invoice"></i>
+                    <span class="sidebar-text">Bill Request</span>
+                </a>
+                <a href="{% url 'my_complaints' %}" class="nav-item" data-page="my_complaints">
+                    <i class="fas fa-comments"></i>
+                    <span class="sidebar-text">My Complaints</span>
+                </a>
+            {% endif %}
+        </nav>
+        
+        <div class="sidebar-footer" style="position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); font-size: 0.85rem;">
+            <p class="mb-0">© {% now "Y" %} Digital Gram Panchayat</p>
+            <small>Secure Government Portal</small>
+        </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <div class="dashboard-main">
+        <!-- Topbar -->
+        <header class="dashboard-topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="topbar-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search applications, users...">
+                </div>
+            </div>
+            
+            <div class="topbar-right">
+                <button class="notification-bell" id="notificationBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+                
+                <div class="notification-dropdown" id="notificationDropdown">
+                    <div class="notification-item">
+                        <div class="notification-title">New Application</div>
+                        <div class="notification-text">John Doe submitted a birth certificate application</div>
+                        <div class="notification-time">5 minutes ago</div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notification-title">Complaint Updated</div>
+                        <div class="notification-text">Street light complaint has been resolved</div>
+                        <div class="notification-time">1 hour ago</div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notification-title">System Update</div>
+                        <div class="notification-text">Portal maintenance scheduled for tonight</div>
+                        <div class="notification-time">3 hours ago</div>
+                    </div>
+                </div>
+                
+                <div class="user-dropdown">
+                    <button class="user-avatar">
+                        <img src="https://picsum.photos/seed/{{ user.username }}/35/35.jpg" alt="{{ user.get_full_name|default:user.username }}">
+                        <div class="user-info">
+                            <p class="user-name">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="user-role">{{ user.role|title }}</p>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                
+                <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </header>
+        
+        <!-- Dynamic Content Area -->
+        <main class="dashboard-content" id="dashboardContent">
+            {% block dashboard_content %}
+            <!-- Content will be loaded here dynamically -->
+            {% endblock %}
+        </main>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<script>
+// Dashboard JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('dashboardSidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const dashboardContent = document.getElementById('dashboardContent');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const notificationBell = document.getElementById('notificationBell');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    
+    // Sidebar Toggle
+    sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+    });
+    
+    // Mobile Sidebar Toggle
+    if (window.innerWidth <= 992) {
+        sidebar.classList.add('collapsed');
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('show');
+        });
+    }
+    
+    // Dynamic Content Loading
+    const navItems = document.querySelectorAll('.nav-item[data-page]');
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.getAttribute('data-page');
+            const url = this.getAttribute('href');
+            
+            // Update active state
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show loading spinner
+            loadingSpinner.classList.add('active');
+            
+            // Load content
+            loadPageContent(url, page);
+        });
+    });
+    
+    function loadPageContent(url, page) {
+        fetch(url + '?ajax=1', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            dashboardContent.innerHTML = html;
+            loadingSpinner.classList.remove('active');
+            
+            // Update browser URL
+            history.pushState({page: page}, '', url);
+            
+            // Initialize page-specific scripts
+            initializePageScripts(page);
+        })
+        .catch(error => {
+            console.error('Error loading page:', error);
+            loadingSpinner.classList.remove('active');
+            dashboardContent.innerHTML = '<div class="alert alert-danger">Error loading content. Please try again.</div>';
+        });
+    }
+    
+    function initializePageScripts(page) {
+        // Initialize page-specific functionality
+        switch(page) {
+            case 'admin_dashboard':
+                initializeAdminDashboard();
+                break;
+            case 'citizen_dashboard':
+                initializeCitizenDashboard();
+                break;
+            // Add other page initializers as needed
+        }
+    }
+    
+    function initializeAdminDashboard() {
+        // Admin dashboard specific scripts
+        console.log('Admin dashboard initialized');
+    }
+    
+    function initializeCitizenDashboard() {
+        // Citizen dashboard specific scripts
+        console.log('Citizen dashboard initialized');
+    }
+    
+    // Notification Dropdown
+    notificationBell.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('show');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            notificationDropdown.classList.remove('show');
+        }, 5000);
+    });
+    
+    // Close notification dropdown when clicking outside
+    document.addEventListener('click', function() {
+        notificationDropdown.classList.remove('show');
+    });
+    
+    notificationDropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+    
+    // Handle browser back button
+    window.addEventListener('popstate', function(e) {
+        if (e.state && e.state.page) {
+            // Reload content for back navigation
+            const url = window.location.pathname;
+            loadPageContent(url, e.state.page);
+        }
+    });
+    
+    // Search functionality
+    const searchInput = document.querySelector('.topbar-search input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            // Implement search functionality
+            console.log('Searching for:', searchTerm);
+        });
+    }
+    
+    // Set initial active state
+    const currentPath = window.location.pathname;
+    navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === currentPath) {
+            item.classList.add('active');
+        }
+    });
+});
+</script>
+{% endblock %}

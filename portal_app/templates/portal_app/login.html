@@ -1,148 +1,111 @@
-{% extends 'portal_app/base.html' %}
-{% load crispy_forms_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login - Digital Gram Panchayat</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="Digital Gram Panchayat">
+    <meta name="robots" content="index, follow">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Premium Auth CSS -->
+    <link rel="stylesheet" href="{% static 'portal_app/css/auth-premium.css' %}">
+</head>
 
-{% block title %}Login - Digital Gram Panchayat{% endblock %}
+<body class="auth-page">
+    <div class="auth-shell">
+        <div class="auth-grid-pattern"></div>
+        <div class="container auth-container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-8 col-xl-5">
+                    <div class="auth-card">
+                        <div class="auth-header">
+                            <div class="auth-badge"><i class="bi bi-person-fill"></i></div>
+                            <h1>Digital Gram Panchayat</h1>
+                            <p>Your trusted partner for digital governance</p>
+                        </div>
 
-{% block extra_css %}
-<style>
-    .auth-page {
-        min-height: 80vh;
-        display: flex;
-        align-items: center;
-        background: linear-gradient(135deg, rgba(26, 35, 126, 0.05), rgba(255, 111, 0, 0.05));
-    }
-    
-    .auth-card {
-        border: none;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-    }
-    
-    .auth-card-header {
-        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        color: white;
-        padding: 3rem 2rem;
-        text-align: center;
-    }
-    
-    .auth-card-header i {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-    }
-    
-    .auth-card-body {
-        padding: 3rem;
-    }
-    
-    .form-floating .form-control {
-        border-radius: 10px;
-    }
-    
-    .social-login {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1.5rem;
-    }
-    
-    .social-btn {
-        flex: 1;
-        padding: 0.75rem;
-        border-radius: 10px;
-        border: 2px solid #e0e0e0;
-        background: white;
-        color: #666;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .social-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-        transform: translateY(-2px);
-    }
-</style>
-{% endblock %}
+                        {% if messages %}
+                        <div class="mb-3">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message|safe }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
 
-{% block content %}
-<div class="auth-page">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-5 col-md-7">
-                <div class="card auth-card fade-in-up">
-                    <div class="auth-card-header">
-                        <i class="bi bi-shield-lock"></i>
-                        <h3 class="mb-2 fw-bold">Welcome Back!</h3>
-                        <p class="mb-0 opacity-75">Login to access your dashboard</p>
-                    </div>
-                    <div class="auth-card-body">
-                        <form method="post" novalidate>
+                        <form method="POST" id="loginForm" novalidate>
                             {% csrf_token %}
-                            
-                            <div class="form-floating mb-3">
-                                {{ form.username }}
-                                <label for="{{ form.username.id_for_label }}">
-                                    <i class="bi bi-person me-2"></i>Username or Email
-                                </label>
-                                {% if form.username.errors %}
-                                    <div class="text-danger mt-1 small">{{ form.username.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="form-floating mb-3">
-                                {{ form.password }}
-                                <label for="{{ form.password.id_for_label }}">
-                                    <i class="bi bi-lock me-2"></i>Password
-                                </label>
-                                {% if form.password.errors %}
-                                    <div class="text-danger mt-1 small">{{ form.password.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="rememberMe">
-                                    <label class="form-check-label" for="rememberMe">
-                                        Remember me
-                                    </label>
+
+                            <div class="mb-3 form-group">
+                                <label for="id_username" class="field-label">Username or Email *</label>
+                                <div class="input-shell">
+                                    <i class="bi bi-person input-icon"></i>
+                                    <input type="text" id="id_username" name="username" class="form-control" placeholder="Enter username or email" required autocomplete="username">
                                 </div>
-                                <a href="#" class="text-primary text-decoration-none">Forgot Password?</a>
+                                <div class="field-error d-none" data-error-for="id_username"></div>
                             </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary btn-lg py-3">
-                                    <i class="bi bi-box-arrow-in-right me-2"></i>Login to Dashboard
-                                </button>
+
+                            <div class="mb-3 form-group">
+                                <label for="id_password" class="field-label">Password *</label>
+                                <div class="input-shell">
+                                    <i class="bi bi-lock input-icon"></i>
+                                    <input type="password" id="id_password" name="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+                                    <button type="button" class="password-tools" data-password-toggle="id_password" aria-label="Show password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="field-error d-none" data-error-for="id_password"></div>
                             </div>
+
+                            <div class="auth-meta-row">
+                                <label class="remember-wrap">
+                                    <input type="checkbox" name="remember_me" id="remember_me">
+                                    <span>Remember me</span>
+                                </label>
+                                <a href="{% url 'forgot_password' %}" class="auth-link">Forgot password?</a>
+                            </div>
+
+                            <button type="submit" class="auth-submit" id="loginSubmitBtn">
+                                <span class="btn-text"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</span>
+                                <span class="btn-loading d-none"><span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Signing in...</span>
+                            </button>
                         </form>
-                        
-                        <div class="text-center mt-4">
-                            <div class="d-flex align-items-center my-4">
-                                <hr class="flex-grow-1">
-                                <span class="px-3 text-muted small">OR</span>
-                                <hr class="flex-grow-1">
-                            </div>
+
+                        <div style="text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--auth-border);">
+                            <p style="margin: 0 0 12px 0; color: var(--auth-muted); font-weight: 600;">Don't have an account?</p>
+                            <a href="{% url 'register' %}" style="display: inline-block; color: var(--auth-primary); text-decoration: none; font-weight: 700; padding: 10px 20px; border-radius: var(--auth-radius-md); background: rgba(91, 92, 240, 0.1); transition: all 0.3s ease;">
+                                <i class="bi bi-person-plus-fill me-1"></i>Create Account
+                            </a>
                         </div>
-                        
-                        <div class="text-center">
-                            <p class="mb-0">
-                                Don't have an account?
-                                <a href="{% url 'register' %}" class="text-primary fw-bold text-decoration-none">
-                                    Register here
-                                </a>
-                            </p>
+
+                        <div style="text-align: center; margin-top: 16px;">
+                            <a href="{% url 'admin_login' %}" style="color: var(--auth-muted); font-size: 0.9rem; text-decoration: none; transition: all 0.3s ease;">
+                                <i class="bi bi-shield-lock me-1"></i>Admin Login
+                            </a>
                         </div>
                     </div>
-                </div>
-                
-                <div class="text-center mt-4">
-                    <p class="text-muted">
-                        <i class="bi bi-shield-check me-2"></i>
-                        Your data is secure and encrypted
-                    </p>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Auth Premium JS -->
+    <script src="{% static 'portal_app/js/auth-premium.js' %}"></script>
+    <script src="{% static 'portal_app/js/login-premium.js' %}"></script>
+</body>
+</html>

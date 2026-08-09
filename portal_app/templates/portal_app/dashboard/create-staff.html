@@ -1,0 +1,177 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="mb-3">Create Staff Account</h1>
+    <p class="text-muted">Create a new staff account for the Digital Gram Panchayat portal.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Staff Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" name="first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" name="last_name" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username *</label>
+                            <input type="text" name="username" class="form-control" required>
+                            <small class="text-muted">Unique username for staff login</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" required>
+                            <small class="text-muted">Official email address</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control">
+                            <small class="text-muted">Contact number for verification</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Department *</label>
+                            <select name="department" class="form-select" required>
+                                <option value="">Select Department</option>
+                                <option value="administration">Administration</option>
+                                <option value="revenue">Revenue</option>
+                                <option value="engineering">Engineering</option>
+                                <option value="health">Health</option>
+                                <option value="education">Education</option>
+                                <option value="agriculture">Agriculture</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Position *</label>
+                            <input type="text" name="position" class="form-control" required>
+                            <small class="text-muted">Job title/role</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Employee ID</label>
+                            <input type="text" name="employee_id" class="form-control">
+                            <small class="text-muted">Official employee identification</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password *</label>
+                            <input type="password" name="password" class="form-control" required>
+                            <small class="text-muted">Minimum 8 characters</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Confirm Password *</label>
+                            <input type="password" name="password_confirm" class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea name="address" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" checked>
+                            <label class="form-check-label">
+                                Active Account
+                            </label>
+                        </div>
+                        <small class="text-muted">Uncheck to create inactive account</small>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Create Staff Account
+                        </button>
+                        <button type="reset" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>Reset Form
+                        </button>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-danger">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Instructions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-lightbulb me-2"></i>Important Notes
+                    </h6>
+                    <ul class="mb-0">
+                        <li>All fields marked with * are required</li>
+                        <li>Username must be unique</li>
+                        <li>Email will be used for notifications</li>
+                        <li>Password must be at least 8 characters</li>
+                        <li>Staff accounts can access applications and complaints</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-shield-alt me-2"></i>Security
+                    </h6>
+                    <p class="mb-0">
+                        Ensure that the staff member's credentials are kept secure. 
+                        The account will have access to sensitive citizen data.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Staff Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Total Staff:</span>
+                    <strong>{{ total_staff }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Active Staff:</span>
+                    <strong class="text-success">{{ active_staff }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Inactive Staff:</span>
+                    <strong class="text-danger">{{ inactive_staff }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,2485 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ request.LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% trans "Digital Grampanchayat Admin" %}{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        (function () {
+            try {
+                var theme = localStorage.getItem('gp_ui_theme') || 'gov-blue';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (err) {
+                document.documentElement.setAttribute('data-theme', 'gov-blue');
+            }
+        })();
+    </script>
+
+    <style>
+        :root {
+            --dash-bg: #eef3fb;
+            --dash-panel: rgba(255, 255, 255, 0.72);
+            --dash-surface: rgba(255, 255, 255, 0.84);
+            --dash-border: rgba(18, 66, 110, 0.14);
+            --dash-text: #1f2937;
+            --dash-muted: #64748b;
+            --dash-primary: #0f4c81;
+            --dash-accent: #1e7ba6;
+            --dash-success: #16a34a;
+            --dash-warning: #f59e0b;
+            --dash-danger: #dc2626;
+            --dash-shadow: 0 18px 40px rgba(15, 76, 129, 0.12);
+            --dash-hover-shadow: 0 28px 50px rgba(15, 76, 129, 0.2);
+        }
+
+        body.theme-dark {
+            --dash-bg: #0f1d31;
+            --dash-panel: rgba(16, 34, 55, 0.82);
+            --dash-surface: rgba(22, 41, 67, 0.92);
+            --dash-border: rgba(160, 204, 255, 0.18);
+            --dash-text: #e7eef9;
+            --dash-muted: #b8c8dd;
+            --dash-shadow: 0 20px 38px rgba(0, 0, 0, 0.38);
+            --dash-hover-shadow: 0 24px 45px rgba(0, 0, 0, 0.48);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Public Sans', 'Segoe UI', sans-serif;
+            background:
+                radial-gradient(circle at 5% 10%, rgba(37, 99, 235, 0.12), transparent 25%),
+                radial-gradient(circle at 92% 6%, rgba(14, 165, 233, 0.14), transparent 26%),
+                var(--dash-bg);
+            color: var(--dash-text);
+            min-height: 100vh;
+            transition: background-color 220ms ease, color 220ms ease;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            inset: auto;
+            pointer-events: none;
+            border-radius: 50%;
+            filter: blur(36px);
+            opacity: 0.45;
+            z-index: 0;
+        }
+
+        body::before {
+            width: 240px;
+            height: 240px;
+            right: -90px;
+            top: 120px;
+            background: rgba(30, 123, 166, 0.16);
+        }
+
+        body::after {
+            width: 320px;
+            height: 320px;
+            left: -120px;
+            bottom: -120px;
+            background: rgba(15, 76, 129, 0.12);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, rgba(15, 76, 129, 0.96) 0%, rgba(16, 94, 148, 0.92) 55%, rgba(8, 46, 79, 0.96) 100%);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            color: #fff;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 1040;
+            box-shadow: 12px 0 32px rgba(7, 33, 56, 0.28);
+            overflow-y: auto;
+            transition: width 240ms ease, transform 240ms ease;
+        }
+
+        .sidebar.collapsed {
+            width: 84px;
+        }
+
+        .sidebar-header {
+            padding: 1.6rem 1.3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .sidebar-logo .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.18);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0.7rem 1.4rem;
+        }
+
+        .nav-section-title {
+            padding: 0.65rem 0.9rem 0.45rem;
+            font-size: 0.73rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.58);
+            font-weight: 600;
+        }
+
+        .nav-item {
+            color: rgba(255, 255, 255, 0.86);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.76rem 0.9rem;
+            border-radius: 12px;
+            margin: 0.2rem 0;
+            transition: transform 160ms ease, background-color 160ms ease;
+            border: 1px solid transparent;
+        }
+
+        .menu-badge {
+            margin-left: auto;
+            min-width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            padding: 0 0.38rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 6px 14px rgba(2, 8, 23, 0.3);
+        }
+
+        .menu-badge-danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+        }
+
+        .menu-badge-primary {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(2px);
+            color: #fff;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .sidebar-text,
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-badge {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 240ms ease;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 84px;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.4rem;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.62));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--dash-border);
+        }
+
+        .topbar-left,
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .dash-language-switcher {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.28rem;
+            border: 1px solid var(--dash-border);
+            border-radius: 999px;
+            padding: 0.2rem 0.35rem;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .dash-language-switcher .lang-btn {
+            border: 0;
+            background: transparent;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--dash-text);
+            padding: 0.18rem 0.42rem;
+            transition: background-color 0.16s ease;
+        }
+
+        .dash-language-switcher .lang-btn.active {
+            background: rgba(15, 76, 129, 0.12);
+        }
+
+        .topbar-left {
+            min-width: 220px;
+        }
+
+        .topbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            text-decoration: none;
+            color: var(--dash-text);
+            font-weight: 700;
+        }
+
+        .topbar-brand i {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px;
+            display: inline-grid;
+            place-items: center;
+            color: #fff;
+            background: linear-gradient(145deg, #0f4c81, #1b6ea3);
+        }
+
+        .topbar-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .topbar-menu {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.1rem;
+            flex-wrap: nowrap;
+        }
+
+        .topbar-menu-link {
+            color: var(--dash-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.3rem 0;
+            border-bottom: 2px solid transparent;
+            transition: color 160ms ease, border-color 160ms ease;
+        }
+
+        .topbar-menu-link:hover,
+        .topbar-menu-link.active {
+            color: var(--dash-primary);
+            border-color: var(--dash-primary);
+        }
+
+        .topbar-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .dashboard-search-row {
+            padding: 0.8rem 1.4rem 1rem;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.54));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--dash-border);
+            position: sticky;
+            top: 72px;
+            z-index: 1025;
+        }
+
+        .dashboard-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .sidebar-toggle,
+        .topbar-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--dash-border);
+            background: rgba(255, 255, 255, 0.42);
+            color: var(--dash-text);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-toggle:hover,
+        .topbar-icon-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(15, 76, 129, 0.18);
+        }
+
+        .topbar-search {
+            position: relative;
+            width: min(540px, 100%);
+            margin: 0;
+            flex: 1 1 320px;
+        }
+
+        .topbar-search i {
+            position: absolute;
+            top: 50%;
+            left: 0.85rem;
+            transform: translateY(-50%);
+            color: var(--dash-muted);
+        }
+
+        .topbar-search input {
+            width: 100%;
+            border: 1px solid var(--dash-border);
+            border-radius: 999px;
+            padding: 0.72rem 0.95rem 0.72rem 2.2rem;
+            background: rgba(255, 255, 255, 0.62);
+            color: var(--dash-text);
+            box-shadow: 0 8px 20px rgba(15, 76, 129, 0.1);
+        }
+
+        .topbar-search input:focus {
+            outline: none;
+            border-color: rgba(30, 123, 166, 0.5);
+            box-shadow: 0 0 0 3px rgba(30, 123, 166, 0.14);
+        }
+
+        .dashboard-controls {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .chart-range-group .btn,
+        .chart-export-group .btn {
+            border: 1px solid var(--dash-border);
+            color: var(--dash-text);
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 999px;
+            padding: 0.34rem 0.8rem;
+            font-weight: 600;
+            font-size: 0.78rem;
+            box-shadow: 0 8px 18px rgba(15, 76, 129, 0.09);
+            transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+        }
+
+        .chart-range-group .btn + .btn,
+        .chart-export-group .btn + .btn {
+            margin-left: 0.35rem;
+        }
+
+        .chart-range-group .btn.active,
+        .chart-range-group .btn:focus-visible,
+        .chart-export-group .btn:focus-visible {
+            background: var(--dash-primary);
+            border-color: var(--dash-primary);
+            color: #ffffff;
+            box-shadow: 0 10px 24px rgba(15, 76, 129, 0.25);
+            outline: none;
+        }
+
+        .chart-export-group .btn:hover,
+        .chart-range-group .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .notification-wrap {
+            position: relative;
+        }
+
+        .dashboard-hero {
+            border: 1px solid var(--dash-border);
+            border-radius: 22px;
+            padding: 1.25rem 1.35rem;
+            background: linear-gradient(110deg, rgba(255, 255, 255, 0.84), rgba(234, 244, 255, 0.74));
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: var(--dash-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-kicker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--dash-primary);
+            font-weight: 700;
+        }
+
+        .hero-actions {
+            display: inline-flex;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+        }
+
+        .metric-card {
+            border: 1px solid var(--dash-border);
+            border-radius: 20px;
+            padding: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: linear-gradient(145deg, var(--dash-surface), rgba(255, 255, 255, 0.62));
+            box-shadow: var(--dash-shadow);
+            min-height: 104px;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--dash-hover-shadow);
+        }
+
+        .metric-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: inline-grid;
+            place-items: center;
+            font-size: 1.05rem;
+            color: #fff;
+            box-shadow: 0 12px 20px rgba(15, 76, 129, 0.22);
+        }
+
+        .metric-content h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .metric-content p {
+            margin: 0;
+            color: var(--dash-muted);
+            font-size: 0.86rem;
+        }
+
+        .metric-primary .metric-icon { background: #1d4ed8; }
+        .metric-warning .metric-icon { background: #d97706; }
+        .metric-success .metric-icon { background: #16a34a; }
+        .metric-danger .metric-icon { background: #dc2626; }
+
+        .panel-card .card-header {
+            border-bottom: 1px solid var(--dash-border);
+            background: rgba(255, 255, 255, 0.58);
+        }
+
+        .panel-card,
+        .card {
+            border-radius: 20px;
+            overflow: hidden;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.68));
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .card-body {
+            color: var(--dash-text);
+        }
+
+        .chart-card .card-body {
+            min-height: 300px;
+        }
+
+        .chart-card canvas {
+            width: 100% !important;
+            max-height: 280px;
+        }
+
+        .content-header,
+        .dashboard-hero,
+        .metric-card,
+        .panel-card,
+        .card,
+        .topbar,
+        .dashboard-search-row,
+        .notification-dropdown {
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .content-header {
+            margin-bottom: 1rem;
+        }
+
+        .content-header h1,
+        .dashboard-hero h2,
+        .panel-card h5 {
+            letter-spacing: -0.02em;
+        }
+
+        .list-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid var(--dash-border);
+        }
+
+        .list-item-row:last-child {
+            border-bottom: 0;
+        }
+
+        .empty-panel {
+            min-height: 190px;
+            display: grid;
+            place-items: center;
+            text-align: center;
+            color: var(--dash-muted);
+            gap: 0.45rem;
+        }
+
+        .empty-panel i {
+            font-size: 1.5rem;
+            color: var(--dash-primary);
+        }
+
+        .dashboard-reveal {
+            animation: dashboardReveal 520ms ease both;
+        }
+
+        .interactive-ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background: rgba(255, 255, 255, 0.45);
+            animation: rippleWave 620ms linear;
+            pointer-events: none;
+        }
+
+        .skeleton-block {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skeleton-block::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(203, 213, 225, 0.2), rgba(203, 213, 225, 0.55), rgba(203, 213, 225, 0.2));
+            background-size: 220% 100%;
+            animation: skeletonMove 1.2s linear infinite;
+            z-index: 2;
+        }
+
+        .skeleton-block > * {
+            opacity: 0.35;
+        }
+
+        .sidebar-toggle,
+        .topbar-icon-btn,
+        .topbar-menu-link,
+        .nav-item,
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            font-size: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--dash-danger);
+            color: #fff;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.4rem);
+            width: 390px;
+            max-width: calc(100vw - 20px);
+            background: var(--dash-panel);
+            border: 1px solid var(--dash-border);
+            border-radius: 16px;
+            box-shadow: var(--dash-shadow);
+            overflow: hidden;
+            display: none;
+            z-index: 1080;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+            animation: dropIn 160ms ease;
+        }
+
+        .notification-head {
+            padding: 0.85rem 0.95rem 0.7rem;
+            border-bottom: 1px solid var(--dash-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.44);
+        }
+
+        .notification-head h6 {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .notification-list {
+            max-height: 350px;
+            overflow: auto;
+            padding: 0.35rem;
+        }
+
+        .notification-card {
+            display: block;
+            padding: 0.75rem;
+            border: 1px solid var(--dash-border);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--dash-text);
+            background: rgba(255, 255, 255, 0.52);
+            margin-bottom: 0.45rem;
+            transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
+        }
+
+        .notification-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .notification-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 22px rgba(15, 76, 129, 0.14);
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .notification-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .notification-title {
+            margin: 0;
+            font-size: 0.86rem;
+            font-weight: 700;
+            line-height: 1.35;
+            color: var(--dash-text);
+        }
+
+        .notification-message {
+            margin: 0;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            color: var(--dash-muted);
+            word-break: break-word;
+        }
+
+        .notification-time {
+            margin-top: 0.35rem;
+            display: block;
+            font-size: 0.72rem;
+            color: var(--dash-muted);
+        }
+
+        .notification-state-badge {
+            border-radius: 999px;
+            padding: 0.15rem 0.48rem;
+            font-size: 0.64rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .notification-state-unread {
+            background: rgba(220, 38, 38, 0.12);
+            color: #b91c1c;
+        }
+
+        .notification-state-read {
+            background: rgba(15, 118, 110, 0.12);
+            color: #0f766e;
+        }
+
+        .notification-empty {
+            padding: 1rem;
+            text-align: center;
+            color: var(--dash-muted);
+            font-size: 0.82rem;
+        }
+
+        .notification-mark-all {
+            border: 0;
+            background: transparent;
+            color: var(--dash-primary);
+            font-size: 0.74rem;
+            font-weight: 600;
+            padding: 0;
+        }
+
+        .notification-mark-all:hover {
+            text-decoration: underline;
+        }
+
+        .content-area {
+            padding: 1.35rem;
+            flex: 1;
+        }
+
+        .content-area.content-swapping {
+            opacity: 0.35;
+            filter: blur(1px);
+            transition: opacity 170ms ease, filter 170ms ease;
+        }
+
+        .content-area.page-fade-in {
+            animation: contentFadeIn 260ms ease;
+        }
+
+        @keyframes contentFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card,
+        .stat-card {
+            border: 1px solid var(--dash-border);
+            background: var(--dash-panel);
+            box-shadow: var(--dash-shadow);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .card:hover,
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--dash-hover-shadow);
+        }
+
+        .footer {
+            padding: 0.9rem 1.4rem;
+            border-top: 1px solid var(--dash-border);
+            color: var(--dash-muted);
+            background: var(--dash-panel);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(9, 22, 38, 0.34);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-spinner.active {
+            display: flex;
+        }
+
+        #gpChatbotLauncher {
+            position: fixed;
+            right: 1.1rem;
+            bottom: 1.1rem;
+            width: 58px;
+            height: 58px;
+            border: 0;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0f4c81, #1e7ba6);
+            color: #ffffff;
+            box-shadow: 0 14px 28px rgba(15, 76, 129, 0.35);
+            z-index: 1140;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        #gpChatbotLauncher:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(15, 76, 129, 0.45);
+        }
+
+        #gpChatbotWindow {
+            position: fixed;
+            right: 1.1rem;
+            bottom: 5.4rem;
+            width: min(360px, calc(100vw - 1.6rem));
+            max-height: min(560px, calc(100vh - 7rem));
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(15, 76, 129, 0.14);
+            border-radius: 18px;
+            box-shadow: 0 24px 44px rgba(15, 76, 129, 0.22);
+            z-index: 1140;
+            display: none;
+            overflow: hidden;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            transform-origin: bottom right;
+        }
+
+        #gpChatbotWindow.is-open {
+            display: flex;
+            flex-direction: column;
+            animation: dropIn 160ms ease;
+        }
+
+        .gp-chat-header {
+            padding: 0.75rem 0.9rem;
+            color: #ffffff;
+            background: linear-gradient(135deg, #0f4c81, #1e7ba6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .gp-chat-close {
+            border: 0;
+            background: transparent;
+            color: #ffffff;
+            font-size: 1.2rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .gp-chat-messages {
+            padding: 0.8rem;
+            overflow-y: auto;
+            min-height: 210px;
+            max-height: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .gp-chat-msg {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .gp-chat-msg.user {
+            justify-content: flex-end;
+        }
+
+        .gp-chat-msg.bot {
+            justify-content: flex-start;
+        }
+
+        .gp-chat-bubble {
+            padding: 0.52rem 0.72rem;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 0.87rem;
+            line-height: 1.35;
+            background: rgba(15, 76, 129, 0.08);
+            color: var(--dash-text);
+            white-space: pre-line;
+            position: relative;
+        }
+
+        .gp-chat-msg.user .gp-chat-bubble {
+            background: #0f4c81;
+            color: #ffffff;
+        }
+
+        .gp-chat-meta {
+            font-size: 0.68rem;
+            color: var(--dash-muted);
+            padding: 0 0.1rem;
+        }
+
+        .gp-chat-msg.typing .gp-chat-bubble {
+            min-width: 58px;
+        }
+
+        .gp-chat-typing {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 16px;
+        }
+
+        .gp-chat-typing span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #0f4c81;
+            animation: typingBounce 1s infinite ease-in-out;
+        }
+
+        .gp-chat-typing span:nth-child(2) {
+            animation-delay: 0.12s;
+        }
+
+        .gp-chat-typing span:nth-child(3) {
+            animation-delay: 0.24s;
+        }
+
+        .gp-chat-suggestions {
+            padding: 0 0.8rem 0.65rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .gp-chat-suggestion-label {
+            width: 100%;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--dash-muted);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+        }
+
+        .gp-chat-suggestion {
+            border: 1px solid var(--dash-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--dash-text);
+            font-size: 0.74rem;
+            padding: 0.2rem 0.55rem;
+            cursor: pointer;
+            transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+        }
+
+        .gp-chat-suggestion:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(15, 76, 129, 0.12);
+            border-color: rgba(15, 76, 129, 0.28);
+        }
+
+        .gp-chat-input-row {
+            padding: 0.7rem;
+            border-top: 1px solid var(--dash-border);
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .gp-chat-input {
+            flex: 1;
+            border: 1px solid var(--dash-border);
+            border-radius: 10px;
+            padding: 0.5rem 0.65rem;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--dash-text);
+        }
+
+        .gp-chat-input:focus {
+            outline: none;
+            border-color: rgba(30, 123, 166, 0.55);
+            box-shadow: 0 0 0 3px rgba(30, 123, 166, 0.16);
+        }
+
+        .gp-chat-send {
+            border: 0;
+            border-radius: 10px;
+            padding: 0.5rem 0.8rem;
+            background: #0f4c81;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .spinner-core {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #fff;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes dropIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.45; }
+            40% { transform: translateY(-4px); opacity: 1; }
+        }
+
+        @keyframes dashboardReveal {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes rippleWave {
+            to {
+                transform: scale(3.8);
+                opacity: 0;
+            }
+        }
+
+        @keyframes skeletonMove {
+            to {
+                background-position: -220% 0;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content,
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .topbar-menu {
+                display: none;
+            }
+
+            .dashboard-search-row {
+                top: 72px;
+                padding: 0.7rem 1rem 0.85rem;
+            }
+
+            .topbar-search {
+                width: 100%;
+            }
+
+            .dashboard-toolbar {
+                align-items: stretch;
+            }
+
+            .dashboard-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .content-area {
+                padding: 1rem;
+            }
+
+            .topbar {
+                padding: 0.75rem 1rem;
+            }
+
+            .dashboard-hero {
+                padding: 1rem;
+            }
+
+            .metric-card {
+                min-height: 96px;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="{% static 'portal_app/css/dashboard_modern.css' %}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body data-user-role="{{ user.role }}" data-authenticated="1" data-user-name="{{ user.first_name|default:user.username }}" data-user-full-name="{{ user.get_full_name|default:user.username }}" data-user-email="{{ user.email|default:'' }}" data-user-phone="{{ user.phone_number|default:'' }}" data-theme="gov-blue">
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="{% if user.role == 'admin' %}{% url 'admin_dashboard' %}{% elif user.role == 'staff' %}{% url 'staff_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" class="sidebar-logo">
+                    <span class="brand-icon"><i class="fas fa-landmark"></i></span>
+                    <span class="sidebar-text">{% trans "Gram Panchayat" %}</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                {% if user.role == 'admin' %}
+                    <div class="nav-section-title">Core</div>
+                    <a href="{% url 'admin_dashboard' %}" class="nav-item" data-nav>
+                        <i class="fas fa-chart-line"></i><span class="sidebar-text">{% trans "Dashboard" %}</span>
+                    </a>
+                    <a href="{% url 'admin_users' %}" class="nav-item" data-nav>
+                        <i class="fas fa-users"></i><span class="sidebar-text">{% trans "Users" %}</span>
+                    </a>
+                    <a href="{% url 'staff_management' %}" class="nav-item" data-nav>
+                        <i class="fas fa-user-gear"></i><span class="sidebar-text">Staff Management</span>
+                    </a>
+                    <a href="{% url 'admin_applications' %}?category=certificates" class="nav-item" data-nav>
+                        <i class="fas fa-certificate"></i><span class="sidebar-text">Certificates</span>
+                        {% if ui_badges.pending_applications > 0 %}<span class="menu-badge menu-badge-danger">{{ ui_badges.pending_applications }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'admin_applications' %}?category=bills" class="nav-item" data-nav>
+                        <i class="fas fa-file-invoice"></i><span class="sidebar-text">Bills</span>
+                    </a>
+                    <a href="{% url 'admin_complaints' %}" class="nav-item" data-nav>
+                        <i class="fas fa-bullhorn"></i><span class="sidebar-text">Complaints</span>
+                        {% if ui_badges.complaints > 0 %}<span class="menu-badge menu-badge-primary">{{ ui_badges.complaints }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'admin_reports' %}" class="nav-item" data-nav>
+                        <i class="fas fa-chart-pie"></i><span class="sidebar-text">Reports</span>
+                    </a>
+
+                    <div class="nav-section-title">Admin Tools</div>
+                    <a href="{% url 'create_staff' %}" class="nav-item" data-nav>
+                        <i class="fas fa-user-plus"></i><span class="sidebar-text">Create Staff</span>
+                    </a>
+                    <a href="{% url 'system_admin_panel' %}" class="nav-item" data-nav>
+                        <i class="fas fa-shield-halved"></i><span class="sidebar-text">System Admin</span>
+                    </a>
+                    <a href="{% url 'notifications_center' %}" class="nav-item" data-nav>
+                        <i class="fas fa-bell"></i><span class="sidebar-text">Notifications</span>
+                        {% if ui_badges.notifications > 0 %}<span class="menu-badge menu-badge-danger">{{ ui_badges.notifications }}</span>{% endif %}
+                    </a>
+                {% elif user.role == 'staff' %}
+                    <div class="nav-section-title">Staff</div>
+                    <a href="{% url 'staff_dashboard' %}" class="nav-item" data-nav>
+                        <i class="fas fa-chart-column"></i><span class="sidebar-text">Dashboard</span>
+                    </a>
+                    <a href="{% url 'admin_applications' %}" class="nav-item" data-nav>
+                        <i class="fas fa-file-alt"></i><span class="sidebar-text">Applications</span>
+                        {% if ui_badges.pending_applications > 0 %}<span class="menu-badge menu-badge-danger">{{ ui_badges.pending_applications }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'admin_complaints' %}" class="nav-item" data-nav>
+                        <i class="fas fa-bullhorn"></i><span class="sidebar-text">Complaints</span>
+                        {% if ui_badges.complaints > 0 %}<span class="menu-badge menu-badge-primary">{{ ui_badges.complaints }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'notifications_center' %}" class="nav-item" data-nav>
+                        <i class="fas fa-bell"></i><span class="sidebar-text">Notifications</span>
+                        {% if ui_badges.notifications > 0 %}<span class="menu-badge menu-badge-danger">{{ ui_badges.notifications }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'account_settings' %}" class="nav-item" data-nav>
+                        <i class="fas fa-gear"></i><span class="sidebar-text">Settings</span>
+                    </a>
+                {% else %}
+                    <div class="nav-section-title">Citizen</div>
+                    <a href="{% url 'dashboard' %}" class="nav-item" data-nav>
+                        <i class="fas fa-chart-column"></i><span class="sidebar-text">Dashboard</span>
+                    </a>
+
+                    <div class="nav-section-title">Services</div>
+                    <a href="{% url 'electricity_bill_service' %}" class="nav-item" data-nav>
+                        <i class="fas fa-bolt"></i><span class="sidebar-text">Electricity Bill</span>
+                    </a>
+                    <a href="{% url 'water_bill_service' %}" class="nav-item" data-nav>
+                        <i class="fas fa-faucet-drip"></i><span class="sidebar-text">Water Bill</span>
+                    </a>
+                    <a href="{% url 'property_tax_service' %}" class="nav-item" data-nav>
+                        <i class="fas fa-building"></i><span class="sidebar-text">Property Tax</span>
+                    </a>
+
+                    <div class="nav-section-title">Payments</div>
+                    <a href="{% url 'pay_bills' %}" class="nav-item" data-nav>
+                        <i class="fas fa-credit-card"></i><span class="sidebar-text">Pay Bills</span>
+                    </a>
+                    <a href="{% url 'payment_history' %}" class="nav-item" data-nav>
+                        <i class="fas fa-receipt"></i><span class="sidebar-text">Payment History</span>
+                    </a>
+
+                    <div class="nav-section-title">Applications</div>
+                    <a href="{% url 'my_applications' %}" class="nav-item" data-nav>
+                        <i class="fas fa-file-signature"></i><span class="sidebar-text">My Applications</span>
+                        {% if ui_badges.pending_applications > 0 %}<span class="menu-badge menu-badge-danger">{{ ui_badges.pending_applications }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'my_complaints' %}" class="nav-item" data-nav>
+                        <i class="fas fa-comments"></i><span class="sidebar-text">My Complaints</span>
+                        {% if ui_badges.complaints > 0 %}<span class="menu-badge menu-badge-primary">{{ ui_badges.complaints }}</span>{% endif %}
+                    </a>
+                    <a href="{% url 'my_certificates' %}" class="nav-item" data-nav>
+                        <i class="fas fa-certificate"></i><span class="sidebar-text">My Certificates</span>
+                    </a>
+
+                    <div class="nav-section-title">Downloads</div>
+                    <a href="{% url 'download_center' %}" class="nav-item" data-nav>
+                        <i class="fas fa-download"></i><span class="sidebar-text">Download Center</span>
+                    </a>
+
+                    <div class="nav-section-title">Account</div>
+                    <a href="{% url 'profile' %}" class="nav-item" data-nav>
+                        <i class="fas fa-user"></i><span class="sidebar-text">Profile</span>
+                    </a>
+                    <a href="{% url 'account_settings' %}" class="nav-item" data-nav>
+                        <i class="fas fa-gear"></i><span class="sidebar-text">Settings</span>
+                    </a>
+
+                    <div class="nav-section-title">System</div>
+                    <a href="{% url 'notifications_center' %}" class="nav-item" data-nav>
+                        <i class="fas fa-bell"></i><span class="sidebar-text">Notifications</span>
+                        {% if ui_badges.notifications > 0 %}<span class="menu-badge menu-badge-danger">{{ ui_badges.notifications }}</span>{% endif %}
+                    </a>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a href="{% if user.role == 'admin' %}{% url 'admin_dashboard' %}{% elif user.role == 'staff' %}{% url 'staff_dashboard' %}{% else %}{% url 'dashboard' %}{% endif %}" class="topbar-brand">
+                        <i class="fas fa-landmark"></i>
+                        <span>Grampanchayat Portal</span>
+                    </a>
+                </div>
+
+                <div class="topbar-center">
+                    <nav class="topbar-menu" aria-label="Dashboard menu">
+                        {% if user.role == 'admin' %}
+                            <a class="topbar-menu-link" data-nav href="{% url 'admin_dashboard' %}">Dashboard</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'admin_users' %}">Users</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'staff_management' %}">Staff Management</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'admin_applications' %}">Applications</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'admin_complaints' %}">Complaints</a>
+                        {% elif user.role == 'staff' %}
+                            <a class="topbar-menu-link" data-nav href="{% url 'staff_dashboard' %}">Dashboard</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'admin_applications' %}">Applications</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'admin_complaints' %}">Complaints</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'account_settings' %}">Settings</a>
+                        {% else %}
+                            <a class="topbar-menu-link" data-nav href="{% url 'dashboard' %}">Dashboard</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'my_applications' %}">Applications</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'my_complaints' %}">Complaints</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'my_certificates' %}">Certificates</a>
+                            <a class="topbar-menu-link" data-nav href="{% url 'account_settings' %}">Settings</a>
+                        {% endif %}
+                    </nav>
+                </div>
+
+                <div class="topbar-right">
+                    <form action="{% url 'set_language' %}" method="post" class="dash-language-switcher" id="dashboardLanguageForm" title="{% trans 'Switch language' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" class="lang-btn {% if request.LANGUAGE_CODE == 'en' %}active{% endif %}" name="language" value="en" title="English">🇬🇧 EN</button>
+                        <button type="submit" class="lang-btn {% if request.LANGUAGE_CODE == 'hi' %}active{% endif %}" name="language" value="hi" title="हिंदी">🇮🇳 HI</button>
+                        <button type="submit" class="lang-btn {% if request.LANGUAGE_CODE == 'mr' %}active{% endif %}" name="language" value="mr" title="मराठी">🇮🇳 MR</button>
+                    </form>
+
+                    <div class="dropdown">
+                        <button class="topbar-icon-btn theme-switcher dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Open theme selector' %}" data-theme-switcher>
+                            <i class="bi bi-palette-fill"></i>
+                            <span class="theme-switcher-label d-none d-lg-inline">{% trans "Theme" %}</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end theme-menu shadow-sm">
+                            <li><button type="button" class="dropdown-item" data-theme-option="light"><i class="bi bi-sun-fill"></i> Light Theme</button></li>
+                            <li><button type="button" class="dropdown-item" data-theme-option="dark"><i class="bi bi-moon-stars-fill"></i> Dark Theme</button></li>
+                            <li><button type="button" class="dropdown-item" data-theme-option="gov-blue"><i class="bi bi-building-fill-gear"></i> Blue Government Theme</button></li>
+                            <li><button type="button" class="dropdown-item" data-theme-option="glass"><i class="bi bi-droplet-half"></i> Glassmorphism Theme</button></li>
+                        </ul>
+                    </div>
+
+                    <div class="notification-wrap">
+                        <button class="topbar-icon-btn" type="button" id="notificationBell" aria-label="Open notifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge d-none" id="notificationBadge">0</span>
+                        </button>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-head">
+                                <div>
+                                    <h6>{% trans "Notifications" %}</h6>
+                                    <div class="small text-muted">{% trans "Latest service updates" %}</div>
+                                </div>
+                                <button type="button" class="notification-mark-all" id="markAllNotificationsBtn">{% trans "Mark all read" %}</button>
+                            </div>
+                            <div class="notification-list" id="notificationDropdownList">
+                                <div class="notification-empty">{% trans "No new notifications." %}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="topbar-icon-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans 'Profile menu' %}">
+                            {% if user.profile_photo %}
+                                <img src="{{ user.profile_photo.url }}" alt="{{ user.get_full_name|default:user.username }}" class="topbar-avatar">
+                            {% else %}
+                                <img src="{% static 'images/no-img-avatar.png' %}" alt="Default avatar" class="topbar-avatar">
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                            <li><h6 class="dropdown-header">{{ user.get_full_name|default:user.username }}</h6></li>
+                            <li><span class="dropdown-item-text text-muted small">{% trans "Role" %}: {{ user.role|title }}</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>{% trans "Profile" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'notifications_center' %}"><i class="fas fa-bell me-2"></i>{% trans "Notifications" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'account_settings' %}"><i class="fas fa-gear me-2"></i>{% trans "Settings" %}</a></li>
+                            {% if user.role == 'admin' %}
+                            <li><a class="dropdown-item" href="{% url 'admin_reports' %}"><i class="fas fa-chart-pie me-2"></i>Reports</a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="{% url 'activity_history' %}"><i class="fas fa-clock-rotate-left me-2"></i>{% trans "Activity History" %}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>{% trans "Logout" %}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-search-row">
+                <div class="dashboard-toolbar">
+                    <div class="topbar-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="topbarSearch" placeholder="{% trans 'Search users, applications, complaints...' %}">
+                    </div>
+                    <div class="dashboard-controls" aria-label="Chart controls">
+                        <div class="btn-group btn-group-sm chart-range-group" role="group" aria-label="Select chart range">
+                            <button type="button" class="btn" data-chart-days="7" aria-pressed="false">7D</button>
+                            <button type="button" class="btn active" data-chart-days="30" aria-pressed="true">30D</button>
+                            <button type="button" class="btn" data-chart-days="90" aria-pressed="false">90D</button>
+                        </div>
+                        <div class="btn-group btn-group-sm chart-export-group" role="group" aria-label="Export chart data">
+                            <button type="button" class="btn" id="refreshDashboardCharts" title="Refresh dashboard charts"><i class="fas fa-rotate"></i><span class="ms-1 d-none d-md-inline">Refresh</span></button>
+                            <button type="button" class="btn" id="exportDashboardCsv" title="Export chart data as CSV"><i class="fas fa-file-csv"></i><span class="ms-1 d-none d-md-inline">CSV</span></button>
+                            <button type="button" class="btn" id="exportDashboardCharts" title="Export charts as PNG"><i class="fas fa-image"></i><span class="ms-1 d-none d-md-inline">PNG</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="preContentArea">
+                {% block pre_content %}{% endblock %}
+            </div>
+
+            <main class="content-area" id="contentArea">
+                {% block content %}{% endblock %}
+            </main>
+
+            <footer class="footer">
+                <p class="mb-0">© {% now "Y" %} {% trans "Digital Gram Panchayat" %} · {% trans "Secure Operations Console" %}</p>
+            </footer>
+
+            <nav class="mobile-bottom-nav d-lg-none" id="mobileBottomNav" aria-label="Mobile dashboard navigation">
+                {% if user.role == 'admin' %}
+                    <a href="{% url 'admin_dashboard' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-chart-line"></i><span>Home</span></a>
+                    <a href="{% url 'admin_users' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-users"></i><span>Users</span></a>
+                    <a href="{% url 'staff_management' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-user-gear"></i><span>Staff</span></a>
+                    <a href="{% url 'admin_applications' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-file-alt"></i><span>Apps</span></a>
+                    <a href="{% url 'admin_complaints' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-bullhorn"></i><span>Cases</span></a>
+                    <a href="{% url 'account_settings' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-gear"></i><span>Settings</span></a>
+                {% elif user.role == 'staff' %}
+                    <a href="{% url 'staff_dashboard' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-chart-column"></i><span>Home</span></a>
+                    <a href="{% url 'admin_applications' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-file-signature"></i><span>Apps</span></a>
+                    <a href="{% url 'admin_complaints' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-comments"></i><span>Cases</span></a>
+                    <a href="{% url 'account_settings' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-gear"></i><span>Settings</span></a>
+                    <a href="{% url 'logout' %}" class="mobile-bottom-link" data-bottom-nav><i class="fas fa-right-from-bracket"></i><span>Exit</span></a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-house"></i><span>Home</span></a>
+                    <a href="{% url 'pay_bills' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-credit-card"></i><span>Bills</span></a>
+                    <a href="{% url 'my_applications' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-file-signature"></i><span>Apps</span></a>
+                    <a href="{% url 'notifications_center' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-bell"></i><span>Alerts</span></a>
+                    <a href="{% url 'profile' %}" class="mobile-bottom-link" data-bottom-nav data-nav><i class="fas fa-user"></i><span>Profile</span></a>
+                    <a href="{% url 'logout' %}" class="mobile-bottom-link" data-bottom-nav><i class="fas fa-right-from-bracket"></i><span>Exit</span></a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+
+    <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-core"></div>
+    </div>
+
+    <div class="modal fade" id="assistantFormModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content assistant-modal">
+                <div class="modal-header border-0 pb-1">
+                    <h5 class="modal-title" id="assistantModalTitle">Smart Assistant Form</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body pt-1">
+                    <div class="assistant-guide mb-2" id="assistantGuide"></div>
+                    <iframe id="assistantFormFrame" class="assistant-form-frame" title="Assistant guided form"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.role != 'admin' and user.role != 'staff' %}
+    <button id="gpChatbotLauncher" type="button" aria-label="{% trans 'Open Help Desk' %}">
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
+
+    <section id="gpChatbotWindow" aria-label="{% trans 'Gram Panchayat Help Desk' %}" aria-hidden="true">
+        <div class="gp-chat-header">
+            <span>{% trans "Help Desk" %}</span>
+            <button id="gpChatbotClose" class="gp-chat-close" type="button" aria-label="{% trans 'Close Chat' %}">&times;</button>
+        </div>
+        <div id="gpChatMessages" class="gp-chat-messages"></div>
+        <div id="gpChatSuggestions" class="gp-chat-suggestions" aria-label="Chat suggestions"></div>
+        <div class="gp-chat-input-row">
+            <input id="gpChatInput" class="gp-chat-input" type="text" placeholder="{% trans 'Type your message...' %}" autocomplete="off">
+            <button id="gpChatSend" class="gp-chat-send" type="button">{% trans "Send" %}</button>
+        </div>
+    </section>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var sidebar = document.getElementById('sidebar');
+            var sidebarToggle = document.getElementById('sidebarToggle');
+            var loadingSpinner = document.getElementById('loadingSpinner');
+            var notificationBell = document.getElementById('notificationBell');
+            var notificationBadge = document.getElementById('notificationBadge');
+            var notificationDropdown = document.getElementById('notificationDropdown');
+            var notificationDropdownList = document.getElementById('notificationDropdownList');
+            var markAllNotificationsBtn = document.getElementById('markAllNotificationsBtn');
+            var contentArea = document.getElementById('contentArea');
+            var preContentArea = document.getElementById('preContentArea');
+            var navLinks = document.querySelectorAll('[data-nav]');
+            var topMenuLinks = document.querySelectorAll('.topbar-menu-link');
+            var topbarSearch = document.getElementById('topbarSearch');
+            var chartRangeButtons = document.querySelectorAll('[data-chart-days]');
+            var refreshChartsButton = document.getElementById('refreshDashboardCharts');
+            var exportCsvButton = document.getElementById('exportDashboardCsv');
+            var exportChartsButton = document.getElementById('exportDashboardCharts');
+            var chatbotLauncher = document.getElementById('gpChatbotLauncher');
+            var chatbotWindow = document.getElementById('gpChatbotWindow');
+            var chatbotClose = document.getElementById('gpChatbotClose');
+            var chatMessages = document.getElementById('gpChatMessages');
+            var chatSuggestions = document.getElementById('gpChatSuggestions');
+            var chatInput = document.getElementById('gpChatInput');
+            var chatSend = document.getElementById('gpChatSend');
+            var chartInstances = [];
+            var selectedChartDays = 30;
+            var latestDashboardPayload = null;
+            var chatTypingNode = null;
+
+            var dashboardLanguageForm = document.getElementById('dashboardLanguageForm');
+            if (dashboardLanguageForm) {
+                dashboardLanguageForm.addEventListener('submit', function () {
+                    document.body.style.transition = 'opacity 120ms ease';
+                    document.body.style.opacity = '0.75';
+                });
+            }
+
+            function getCookie(name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i += 1) {
+                        var cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            function getStoredTheme() {
+                try {
+                    return localStorage.getItem('gp_ui_theme');
+                } catch (err) {
+                    return null;
+                }
+            }
+
+            function updateThemeSwitcher(themeName) {
+                var switcher = document.querySelector('[data-theme-switcher]');
+                var label = document.querySelector('.theme-switcher-label');
+                var icon = switcher ? switcher.querySelector('i') : null;
+                var config = {
+                    light: { label: 'Light', icon: 'bi bi-sun-fill' },
+                    dark: { label: 'Dark', icon: 'bi bi-moon-stars-fill' },
+                    'gov-blue': { label: 'Gov Blue', icon: 'bi bi-building-fill-gear' },
+                    glass: { label: 'Glass', icon: 'bi bi-droplet-half' }
+                };
+                var current = config[themeName] || config.light;
+
+                if (icon) {
+                    icon.className = current.icon;
+                }
+                if (label) {
+                    label.textContent = current.label;
+                }
+
+                document.querySelectorAll('[data-theme-option]').forEach(function (option) {
+                    option.classList.toggle('active', option.getAttribute('data-theme-option') === themeName);
+                });
+            }
+
+            function setTheme(themeName) {
+                var normalized = ['light', 'dark', 'gov-blue', 'glass'].indexOf(themeName) !== -1 ? themeName : 'light';
+                document.documentElement.setAttribute('data-theme', normalized);
+                document.body.classList.toggle('theme-dark', normalized === 'dark');
+                document.body.classList.toggle('theme-blue', normalized === 'gov-blue');
+                document.body.classList.toggle('theme-glass', normalized === 'glass');
+                updateThemeSwitcher(normalized);
+                try {
+                    localStorage.setItem('gp_ui_theme', normalized);
+                    localStorage.setItem('gp_admin_theme_dark', normalized === 'dark' ? '1' : '0');
+                } catch (err) {}
+                document.dispatchEvent(new CustomEvent('gp-theme-changed', { detail: { theme: normalized, isDark: normalized === 'dark' } }));
+            }
+
+            function initTheme() {
+                var stored = getStoredTheme();
+                var prefersDark = false;
+                try {
+                    prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                } catch (err) {
+                    prefersDark = false;
+                }
+                setTheme(stored || (prefersDark ? 'dark' : 'light'));
+            }
+
+            function escapeHtml(value) {
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function updateNotificationUI(data) {
+                if (!data) {
+                    return;
+                }
+                var items = data.items || [];
+                var unread = data.unread_count || 0;
+
+                if (unread > 0) {
+                    notificationBadge.textContent = unread > 99 ? '99+' : String(unread);
+                    notificationBadge.classList.remove('d-none');
+                } else {
+                    notificationBadge.classList.add('d-none');
+                }
+
+                if (!items.length) {
+                    notificationDropdownList.innerHTML = '<div class="notification-empty">{% trans "No new notifications." %}</div>';
+                    return;
+                }
+
+                notificationDropdownList.innerHTML = items.map(function (item) {
+                    var href = item.target_url || '#';
+                    var stateLabel = item.is_read ? '{% trans "Read" %}' : '{% trans "Unread" %}';
+                    var stateClass = item.is_read ? 'notification-state-read' : 'notification-state-unread';
+                    return '' +
+                        '<a class="notification-card" data-notification-item href="' + href + '" data-notification-id="' + Number(item.id || 0) + '">' +
+                            '<div class="notification-meta">' +
+                                '<h6 class="notification-title">' + escapeHtml(item.title) + '</h6>' +
+                                '<span class="notification-state-badge ' + stateClass + '">' + stateLabel + '</span>' +
+                            '</div>' +
+                            '<p class="notification-message">' + escapeHtml(item.message) + '</p>' +
+                            '<small class="notification-time">' + escapeHtml(item.created_at) + '</small>' +
+                        '</a>';
+                }).join('');
+            }
+
+            function normalizePath(pathValue) {
+                var path = String(pathValue || '/').split('?')[0].split('#')[0];
+                if (!path.startsWith('/')) {
+                    path = '/' + path;
+                }
+                return path.replace(/\/+$/, '') || '/';
+            }
+
+            function setActiveNavigationStates(pathname) {
+                var activePath = normalizePath(pathname || window.location.pathname);
+
+                document.querySelectorAll('[data-nav]').forEach(function (link) {
+                    var href = link.getAttribute('href') || '';
+                    var normalizedHref = normalizePath(href);
+                    var isExact = activePath === normalizedHref;
+                    var isNested = activePath.indexOf(normalizedHref + '/') === 0;
+                    link.classList.toggle('active', isExact || isNested);
+                });
+
+                initBottomNav();
+            }
+
+            function fetchAndReplaceContent(targetUrl, pushStateEntry) {
+                if (!contentArea || !targetUrl) {
+                    window.location.href = targetUrl;
+                    return;
+                }
+
+                loadingSpinner.classList.add('active');
+                contentArea.classList.add('content-swapping');
+
+                fetch(targetUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Failed to load page content');
+                        }
+                        return response.text();
+                    })
+                    .then(function (html) {
+                        var parser = new DOMParser();
+                        var parsed = parser.parseFromString(html, 'text/html');
+                        var incomingContent = parsed.getElementById('contentArea');
+                        var incomingPreContent = parsed.getElementById('preContentArea');
+                        if (!incomingContent) {
+                            window.location.href = targetUrl;
+                            return;
+                        }
+
+                        if (preContentArea) {
+                            preContentArea.innerHTML = incomingPreContent ? incomingPreContent.innerHTML : '';
+                        }
+
+                        contentArea.innerHTML = incomingContent.innerHTML;
+                        contentArea.classList.remove('content-swapping');
+                        contentArea.classList.remove('page-fade-in');
+                        void contentArea.offsetWidth;
+                        contentArea.classList.add('page-fade-in');
+
+                        document.title = parsed.title || document.title;
+
+                        if (pushStateEntry !== false) {
+                            window.history.pushState({ path: targetUrl }, '', targetUrl);
+                        }
+
+                        setActiveNavigationStates(targetUrl);
+                        addRevealAnimation();
+                        initSortableTables();
+                        if (typeof window.scrollTo === 'function') {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    })
+                    .catch(function () {
+                        window.location.href = targetUrl;
+                    })
+                    .finally(function () {
+                        loadingSpinner.classList.remove('active');
+                        contentArea.classList.remove('content-swapping');
+                    });
+            }
+
+            function destroyCharts() {
+                chartInstances.forEach(function (chart) {
+                    if (chart && typeof chart.destroy === 'function') {
+                        chart.destroy();
+                    }
+                });
+                chartInstances = [];
+            }
+
+            function getChartPalette() {
+                var dark = document.documentElement.getAttribute('data-theme') === 'dark' || document.body.classList.contains('theme-dark');
+                return {
+                    text: dark ? '#dbeafe' : '#28415f',
+                    muted: dark ? '#8aa2bf' : '#6b7f97',
+                    grid: dark ? 'rgba(160, 204, 255, 0.12)' : 'rgba(18, 66, 110, 0.1)',
+                    lineStart: dark ? 'rgba(72, 191, 255, 0.95)' : 'rgba(15, 76, 129, 0.95)',
+                    lineEnd: dark ? 'rgba(53, 110, 255, 0.2)' : 'rgba(30, 123, 166, 0.16)',
+                    barOne: dark ? 'rgba(66, 153, 225, 0.88)' : 'rgba(15, 76, 129, 0.9)',
+                    barTwo: dark ? 'rgba(45, 212, 191, 0.86)' : 'rgba(30, 123, 166, 0.85)',
+                    barThree: dark ? 'rgba(244, 114, 182, 0.84)' : 'rgba(99, 102, 241, 0.82)',
+                    pie: dark ? ['#60a5fa', '#22d3ee', '#a78bfa'] : ['#0f4c81', '#1e7ba6', '#7c3aed']
+                };
+            }
+
+            function getFallbackChartData() {
+                var role = document.body.getAttribute('data-user-role') || 'citizen';
+
+                if (role === 'admin') {
+                    return {
+                        line_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        bar_labels: ['Income', 'Birth', 'Death', 'Bills', 'Complaints'],
+                        pie_labels: ['Approved', 'Pending', 'Rejected'],
+                        line: [18, 24, 29, 35, 42, 51],
+                        bar: [62, 38, 24, 30, 21],
+                        pie: [54, 28, 18]
+                    };
+                }
+
+                if (role === 'staff') {
+                    return {
+                        line_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        bar_labels: ['Income', 'Birth', 'Death', 'Bills', 'Complaints'],
+                        pie_labels: ['Approved', 'Pending', 'Rejected'],
+                        line: [12, 17, 21, 28, 33, 40],
+                        bar: [43, 29, 18, 21, 17],
+                        pie: [48, 33, 19]
+                    };
+                }
+
+                return {
+                    line_labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    bar_labels: ['Income', 'Birth', 'Death', 'Bills', 'Complaints'],
+                    pie_labels: ['Approved', 'Pending', 'Rejected'],
+                    line: [4, 6, 8, 11, 14, 18],
+                    bar: [12, 8, 4, 6, 5],
+                    pie: [6, 3, 1],
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+                };
+            }
+
+            function fetchDashboardChartData(days) {
+                var endpoint = '{% url "dashboard_data_api" %}';
+                var requestDays = Number(days) || selectedChartDays;
+                var requestUrl = endpoint + '?days=' + encodeURIComponent(String(requestDays));
+
+                return fetch(requestUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Failed to load dashboard chart data');
+                        }
+                        return response.json();
+                    })
+                    .catch(function () {
+                        return getFallbackChartData();
+                    });
+            }
+
+            function applyMetricCounts(metrics) {
+                if (!metrics) {
+                    return;
+                }
+
+                function animateValue(node, finalValue) {
+                    var duration = 780;
+                    var startTime = null;
+
+                    function frame(timestamp) {
+                        if (!startTime) {
+                            startTime = timestamp;
+                        }
+                        var progress = Math.min((timestamp - startTime) / duration, 1);
+                        var eased = 1 - Math.pow(1 - progress, 3);
+                        var value = Math.round(eased * finalValue);
+                        node.textContent = value.toLocaleString();
+
+                        if (progress < 1) {
+                            window.requestAnimationFrame(frame);
+                        } else {
+                            node.textContent = finalValue.toLocaleString();
+                        }
+                    }
+
+                    node.textContent = '0';
+                    window.requestAnimationFrame(frame);
+                }
+
+                var metricMap = {
+                    total_applications: 'total_applications',
+                    pending_applications: 'pending_applications',
+                    approved_applications: 'approved_applications',
+                    rejected_applications: 'rejected_applications'
+                };
+
+                document.querySelectorAll('[data-metric-key]').forEach(function (node) {
+                    var key = node.getAttribute('data-metric-key');
+                    var mapped = metricMap[key] || key;
+                    var value = Number(metrics[mapped]);
+                    if (!Number.isFinite(value)) {
+                        return;
+                    }
+                    animateValue(node, value);
+                });
+            }
+
+            function setActiveRangeButton(days) {
+                chartRangeButtons.forEach(function (button) {
+                    var isActive = Number(button.getAttribute('data-chart-days')) === Number(days);
+                    button.classList.toggle('active', isActive);
+                    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                });
+            }
+
+            function triggerDownload(fileName, content, mimeType) {
+                var blob = new Blob([content], { type: mimeType });
+                var url = URL.createObjectURL(blob);
+                var anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = fileName;
+                document.body.appendChild(anchor);
+                anchor.click();
+                document.body.removeChild(anchor);
+                URL.revokeObjectURL(url);
+            }
+
+            function exportDashboardCsv() {
+                var payload = latestDashboardPayload || getFallbackChartData();
+                var labels = payload.line_labels || payload.labels || [];
+                var barLabels = payload.bar_labels || labels;
+                var pieLabels = payload.pie_labels || ['Approved', 'Pending', 'Rejected'];
+                var line = payload.line || [];
+                var bar = payload.bar || [];
+                var pie = payload.pie || [];
+
+                if (!labels.length) {
+                    labels = ['Period 1', 'Period 2', 'Period 3', 'Period 4', 'Period 5', 'Period 6'];
+                }
+
+                var rows = ['Period,Monthly Growth'];
+                labels.forEach(function (label, index) {
+                    rows.push([
+                        '"' + String(label).replace(/"/g, '""') + '"',
+                        Number(line[index] || 0)
+                    ].join(','));
+                });
+
+                rows.push('');
+                rows.push('Category,Applications');
+                barLabels.forEach(function (label, index) {
+                    rows.push([
+                        '"' + String(label).replace(/"/g, '""') + '"',
+                        Number(bar[index] || 0)
+                    ].join(','));
+                });
+
+                rows.push('');
+                rows.push('Status,Count');
+                pieLabels.forEach(function (label, index) {
+                    rows.push(String(label) + ',' + Number(pie[index] || 0));
+                });
+
+                var stamp = new Date().toISOString().replace(/[:.]/g, '-');
+                triggerDownload('dashboard-data-' + selectedChartDays + 'd-' + stamp + '.csv', rows.join('\n'), 'text/csv;charset=utf-8');
+            }
+
+            function exportDashboardChartsPng() {
+                if (!chartInstances.length) {
+                    return;
+                }
+
+                var stamp = new Date().toISOString().replace(/[:.]/g, '-');
+                chartInstances.forEach(function (chart, index) {
+                    if (!chart || !chart.canvas) {
+                        return;
+                    }
+                    var link = document.createElement('a');
+                    link.href = chart.canvas.toDataURL('image/png', 1.0);
+                    link.download = 'dashboard-chart-' + (index + 1) + '-' + selectedChartDays + 'd-' + stamp + '.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            }
+
+            function initializeCharts(days) {
+                if (!window.Chart) {
+                    setDashboardSkeletonState(false);
+                    return;
+                }
+
+                var normalizedDays = [7, 30, 90].indexOf(Number(days)) !== -1 ? Number(days) : selectedChartDays;
+                selectedChartDays = normalizedDays;
+                setActiveRangeButton(selectedChartDays);
+                setDashboardSkeletonState(true);
+
+                var lineCanvas = document.getElementById('userGrowthChart');
+                var barCanvas = document.getElementById('applicationsChart');
+                var pieCanvas = document.getElementById('certificatesChart');
+
+                if (!lineCanvas && !barCanvas && !pieCanvas) {
+                    setDashboardSkeletonState(false);
+                    return;
+                }
+
+                destroyCharts();
+
+                var palette = getChartPalette();
+
+                Chart.defaults.font.family = 'Public Sans, Segoe UI, sans-serif';
+                Chart.defaults.color = palette.text;
+
+                fetchDashboardChartData(selectedChartDays).then(function (chartData) {
+                    latestDashboardPayload = chartData;
+
+                    var fallback = getFallbackChartData();
+                    var lineLabels = chartData.line_labels || chartData.labels || fallback.line_labels || fallback.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                    var barLabels = chartData.bar_labels || fallback.bar_labels || lineLabels;
+                    var pieLabels = chartData.pie_labels || fallback.pie_labels || ['Approved', 'Pending', 'Rejected'];
+                    var lineData = chartData.line || fallback.line || [];
+                    var barData = chartData.bar || fallback.bar || [];
+                    var pieData = chartData.pie || fallback.pie || [];
+                    var barPalette = [palette.barOne, palette.barTwo, palette.barThree];
+                    var barColors = barLabels.map(function (_, index) {
+                        return barPalette[index % barPalette.length];
+                    });
+
+                    applyMetricCounts(chartData.metrics);
+
+                    if (lineCanvas) {
+                        var lineCtx = lineCanvas.getContext('2d');
+                        var gradient = lineCtx.createLinearGradient(0, 0, 0, 260);
+                        gradient.addColorStop(0, palette.lineStart);
+                        gradient.addColorStop(1, palette.lineEnd);
+
+                        chartInstances.push(new Chart(lineCtx, {
+                            type: 'line',
+                            data: {
+                                labels: lineLabels,
+                                datasets: [{
+                                    label: 'User Growth',
+                                    data: lineData,
+                                    borderColor: palette.lineStart,
+                                    backgroundColor: gradient,
+                                    fill: true,
+                                    tension: 0.42,
+                                    borderWidth: 3,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    pointBackgroundColor: '#ffffff',
+                                    pointBorderWidth: 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: { duration: 900 },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: '#0f172a',
+                                        titleColor: '#ffffff',
+                                        bodyColor: '#e2e8f0',
+                                        padding: 12,
+                                        displayColors: false
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { display: false }, ticks: { color: palette.muted } },
+                                    y: { beginAtZero: true, grid: { color: palette.grid }, ticks: { color: palette.muted } }
+                                }
+                            }
+                        }));
+                    }
+
+                    if (barCanvas) {
+                        var barCtx = barCanvas.getContext('2d');
+                        chartInstances.push(new Chart(barCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: barLabels,
+                                datasets: [{
+                                    label: 'Applications',
+                                    data: barData,
+                                    borderRadius: 12,
+                                    borderSkipped: false,
+                                    backgroundColor: barColors
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: { duration: 900 },
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: '#0f172a',
+                                        titleColor: '#ffffff',
+                                        bodyColor: '#e2e8f0',
+                                        padding: 12,
+                                        displayColors: false
+                                    }
+                                },
+                                scales: {
+                                    x: { grid: { display: false }, ticks: { color: palette.muted } },
+                                    y: { beginAtZero: true, grid: { color: palette.grid }, ticks: { color: palette.muted } }
+                                }
+                            }
+                        }));
+                    }
+
+                    if (pieCanvas) {
+                        var pieCtx = pieCanvas.getContext('2d');
+                        chartInstances.push(new Chart(pieCtx, {
+                            type: 'pie',
+                            data: {
+                                labels: pieLabels,
+                                datasets: [{
+                                    data: pieData,
+                                    backgroundColor: palette.pie,
+                                    borderColor: document.body.classList.contains('theme-dark') ? '#102237' : '#ffffff',
+                                    borderWidth: 4,
+                                    hoverOffset: 10
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: { duration: 900 },
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            color: palette.muted,
+                                            usePointStyle: true,
+                                            boxWidth: 10
+                                        }
+                                    },
+                                    tooltip: {
+                                        backgroundColor: '#0f172a',
+                                        titleColor: '#ffffff',
+                                        bodyColor: '#e2e8f0',
+                                        padding: 12
+                                    }
+                                }
+                            }
+                        }));
+                    }
+
+                    setDashboardSkeletonState(false);
+                });
+            }
+
+            function addRippleEffect(event) {
+                var target = event.target.closest('.sidebar-toggle, .topbar-icon-btn, .topbar-menu-link, .nav-item, .btn');
+                if (!target || target.closest('.dropdown-menu')) {
+                    return;
+                }
+
+                var rect = target.getBoundingClientRect();
+                var ripple = document.createElement('span');
+                ripple.className = 'interactive-ripple';
+                ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
+                ripple.style.left = (event.clientX - rect.left - (Math.max(rect.width, rect.height) / 2)) + 'px';
+                ripple.style.top = (event.clientY - rect.top - (Math.max(rect.width, rect.height) / 2)) + 'px';
+                target.appendChild(ripple);
+
+                setTimeout(function () {
+                    if (ripple && ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 620);
+            }
+
+            function addRevealAnimation() {
+                var children = document.querySelectorAll('.content-area > *, .dashboard-content > *');
+                children.forEach(function (node, index) {
+                    node.classList.add('dashboard-reveal');
+                    node.style.animationDelay = (index * 70) + 'ms';
+                });
+            }
+
+            function setDashboardSkeletonState(isLoading) {
+                var targets = document.querySelectorAll('.metric-card, .chart-card .card-body, .panel-card table');
+                targets.forEach(function (node) {
+                    node.classList.toggle('skeleton-block', !!isLoading);
+                });
+            }
+
+            function fetchNotifications() {
+                fetch('/api/notifications/', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                    .then(function (response) { return response.json(); })
+                    .then(updateNotificationUI)
+                    .catch(function () {});
+            }
+
+            {% if user.role != 'admin' and user.role != 'staff' %}
+            function formatChatTimestamp(date) {
+                return (date || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function appendChatMessage(kind, text, options) {
+                if (!chatMessages) {
+                    return;
+                }
+                var wrapper = document.createElement('div');
+                wrapper.className = 'gp-chat-msg ' + kind;
+                var bubble = document.createElement('div');
+                bubble.className = 'gp-chat-bubble';
+                bubble.textContent = text;
+                var meta = document.createElement('span');
+                meta.className = 'gp-chat-meta';
+                meta.textContent = options && options.timestamp ? options.timestamp : formatChatTimestamp();
+                wrapper.appendChild(bubble);
+                wrapper.appendChild(meta);
+                chatMessages.appendChild(wrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return wrapper;
+            }
+
+            function showChatTyping() {
+                if (!chatMessages || chatTypingNode) {
+                    return;
+                }
+                var wrapper = document.createElement('div');
+                wrapper.className = 'gp-chat-msg bot typing';
+                var bubble = document.createElement('div');
+                bubble.className = 'gp-chat-bubble';
+                var typing = document.createElement('span');
+                typing.className = 'gp-chat-typing';
+                typing.innerHTML = '<span></span><span></span><span></span>';
+                bubble.appendChild(typing);
+                wrapper.appendChild(bubble);
+                chatMessages.appendChild(wrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                chatTypingNode = wrapper;
+            }
+
+            function hideChatTyping() {
+                if (chatTypingNode && chatTypingNode.parentNode) {
+                    chatTypingNode.parentNode.removeChild(chatTypingNode);
+                }
+                chatTypingNode = null;
+            }
+
+            function renderChatSuggestions(list, labelText) {
+                if (!chatSuggestions) {
+                    return;
+                }
+                chatSuggestions.innerHTML = '';
+                var items = list || [];
+                if (!items.length) {
+                    chatSuggestions.hidden = true;
+                    return;
+                }
+
+                var label = document.createElement('div');
+                label.className = 'gp-chat-suggestion-label';
+                label.textContent = labelText || '{% trans "Quick Suggestions" %}';
+                chatSuggestions.appendChild(label);
+
+                (list || []).forEach(function (item) {
+                    var button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'gp-chat-suggestion';
+                    button.textContent = item;
+                    button.addEventListener('click', function () {
+                        sendChatMessage(item);
+                    });
+                    chatSuggestions.appendChild(button);
+                });
+                chatSuggestions.hidden = false;
+            }
+
+            function openChatbot() {
+                if (!chatbotWindow) {
+                    return;
+                }
+                chatbotWindow.classList.add('is-open');
+                chatbotWindow.setAttribute('aria-hidden', 'false');
+                if (chatInput) {
+                    chatInput.focus();
+                }
+            }
+
+            function closeChatbot() {
+                if (!chatbotWindow) {
+                    return;
+                }
+                chatbotWindow.classList.remove('is-open');
+                chatbotWindow.setAttribute('aria-hidden', 'true');
+            }
+
+            function sendChatMessage(preset) {
+                var messageText = typeof preset === 'string' ? preset.trim() : (chatInput ? chatInput.value.trim() : '');
+                if (!messageText) {
+                    return;
+                }
+
+                appendChatMessage('user', messageText);
+                if (chatInput) {
+                    chatInput.value = '';
+                }
+                showChatTyping();
+
+                fetch('{% url "chatbot_api" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ message: messageText })
+                })
+                    .then(function (response) { return response.json().then(function (data) { return { ok: response.ok, data: data }; }); })
+                    .then(function (data) {
+                        hideChatTyping();
+                        var responseData = data && data.data ? data.data : {};
+                        var suggestions = Array.isArray(responseData.suggestions) && responseData.suggestions.length ? responseData.suggestions : null;
+                        renderChatSuggestions(suggestions || ['{% trans "Apply Certificate" %}', '{% trans "Check Status" %}', '{% trans "Pay Bill" %}', '{% trans "Required Documents" %}']);
+                        appendChatMessage('bot', (responseData && responseData.reply) || '{% trans "No response available right now." %}');
+                    })
+                    .catch(function () {
+                        hideChatTyping();
+                        renderChatSuggestions(['{% trans "Apply Certificate" %}', '{% trans "Check Status" %}', '{% trans "Pay Bill" %}', '{% trans "Required Documents" %}']);
+                        appendChatMessage('bot', '{% trans "Network issue. Please try again." %}');
+                    });
+            }
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function () {
+                    if (window.innerWidth <= 1024) {
+                        sidebar.classList.toggle('show');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                    }
+                });
+            }
+
+            navLinks.forEach(function (link) {
+                link.addEventListener('click', function (event) {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
+                        return;
+                    }
+
+                    var href = link.getAttribute('href');
+                    if (!href || href === '#' || href.indexOf('javascript:') === 0 || href.indexOf('/logout') !== -1) {
+                        return;
+                    }
+
+                    var targetUrl = new URL(href, window.location.origin);
+                    if (targetUrl.origin !== window.location.origin) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    fetchAndReplaceContent(targetUrl.pathname + targetUrl.search, true);
+                });
+            });
+
+            setActiveNavigationStates(window.location.pathname);
+
+            window.addEventListener('popstate', function () {
+                fetchAndReplaceContent(window.location.pathname + window.location.search, false);
+            });
+
+            if (notificationBell && notificationDropdown) {
+                notificationBell.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    notificationDropdown.classList.toggle('show');
+                });
+
+                document.addEventListener('click', function () {
+                    notificationDropdown.classList.remove('show');
+                });
+
+                notificationDropdown.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                });
+
+                if (markAllNotificationsBtn) {
+                    markAllNotificationsBtn.addEventListener('click', function () {
+                        fetch('{% url "mark_all_notifications_read" %}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                            .then(function () {
+                                fetchNotifications();
+                            })
+                            .catch(function () {});
+                    });
+                }
+
+                notificationDropdownList.addEventListener('click', function (event) {
+                    var card = event.target.closest('[data-notification-item]');
+                    if (!card) {
+                        return;
+                    }
+
+                    var notificationId = Number(card.getAttribute('data-notification-id') || 0);
+                    if (!notificationId) {
+                        return;
+                    }
+
+                    fetch('{% url "mark_notification_read" 0 %}'.replace('/0/read/', '/' + notificationId + '/read/'), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    }).catch(function () {});
+                });
+
+                fetchNotifications();
+                setInterval(fetchNotifications, 30000);
+            }
+
+            if (chatbotLauncher) {
+                chatbotLauncher.addEventListener('click', openChatbot);
+            }
+            if (chatbotClose) {
+                chatbotClose.addEventListener('click', closeChatbot);
+            }
+            if (chatSend) {
+                chatSend.addEventListener('click', function () {
+                    sendChatMessage();
+                });
+            }
+            if (chatInput) {
+                chatInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        sendChatMessage();
+                    }
+                });
+            }
+
+            renderChatSuggestions(['{% trans "Apply Certificate" %}', '{% trans "Track Application" %}', '{% trans "Pay Electricity Bill" %}', '{% trans "File Complaint" %}']);
+            appendChatMessage('bot', '{% trans "Hello. I am your Help Desk assistant. How can I help you today?" %}');
+            closeChatbot();
+            {% endif %}
+
+            document.querySelectorAll('[data-theme-option]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    setTheme(button.getAttribute('data-theme-option'));
+                    initializeCharts();
+                });
+            });
+
+            if (topbarSearch) {
+                topbarSearch.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        var query = topbarSearch.value.trim();
+                        if (!query) {
+                            return;
+                        }
+                        var role = document.body.getAttribute('data-user-role');
+                        var target = role === 'admin' ? '{% url "admin_users" %}' : '{% url "admin_applications" %}';
+                        window.location.href = target + '?q=' + encodeURIComponent(query);
+                    }
+                });
+            }
+
+            chartRangeButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var days = Number(button.getAttribute('data-chart-days'));
+                    if ([7, 30, 90].indexOf(days) === -1) {
+                        return;
+                    }
+                    initializeCharts(days);
+                });
+            });
+
+            if (refreshChartsButton) {
+                refreshChartsButton.addEventListener('click', function () {
+                    initializeCharts(selectedChartDays);
+                });
+            }
+
+            if (exportCsvButton) {
+                exportCsvButton.addEventListener('click', exportDashboardCsv);
+            }
+
+            if (exportChartsButton) {
+                exportChartsButton.addEventListener('click', exportDashboardChartsPng);
+            }
+
+            initTheme();
+            addRevealAnimation();
+            setDashboardSkeletonState(true);
+            initializeCharts(selectedChartDays);
+            document.addEventListener('click', addRippleEffect, true);
+            window.addEventListener('pageshow', function () {
+                loadingSpinner.classList.remove('active');
+            });
+        })();
+    </script>
+    <script src="{% static 'portal_app/js/dashboard_modern.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

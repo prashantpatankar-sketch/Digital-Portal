@@ -1,0 +1,68 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}Reports Center{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+    <div>
+        <h3 class="mb-1">Reports Center</h3>
+        <p class="text-muted mb-0">Generate and send operational analytics reports to admin recipients.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form method="post" action="{% url 'trigger_admin_report' %}">
+            {% csrf_token %}
+            <input type="hidden" name="period" value="daily">
+            <button class="btn btn-primary" type="submit"><i class="fas fa-envelope me-2"></i>Send Daily</button>
+        </form>
+        <form method="post" action="{% url 'trigger_admin_report' %}">
+            {% csrf_token %}
+            <input type="hidden" name="period" value="weekly">
+            <button class="btn btn-outline-primary" type="submit"><i class="fas fa-calendar-week me-2"></i>Send Weekly</button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card p-3 h-100">
+            <h5 class="mb-3">Current Summary</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <div class="text-muted small">Total Users</div>
+                        <div class="fs-4 fw-bold">{{ analytics.overview.total_users }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <div class="text-muted small">Applications</div>
+                        <div class="fs-4 fw-bold">{{ analytics.overview.total_applications }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded-3 p-3 h-100">
+                        <div class="text-muted small">Certificates Issued</div>
+                        <div class="fs-4 fw-bold">{{ analytics.overview.certificates_issued }}</div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <h6>Insights Included in Email</h6>
+            <ul class="mb-0">
+                {% for insight in analytics.insights %}
+                <li>{{ insight }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-3 h-100">
+            <h5 class="mb-3">Delivery Notes</h5>
+            <p class="text-muted mb-2">Daily/weekly jobs can be automated using management commands and scheduler.</p>
+            <pre class="small bg-light p-2 rounded mb-2">python manage.py send_admin_reports --period daily</pre>
+            <pre class="small bg-light p-2 rounded mb-2">python manage.py send_admin_reports --period weekly</pre>
+            <p class="small text-muted mb-0">Recipients: configured admin emails (or ADMIN_REPORT_RECIPIENTS if provided).</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

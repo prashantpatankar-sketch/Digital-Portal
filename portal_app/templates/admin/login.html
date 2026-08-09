@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Back! | Admin Login</title>
+    <link rel="stylesheet" href="/static/portal_app/login_custom.css">
+</head>
+<body>
+<div class="login-container">
+    <div class="login-header">
+        <div class="icon">&#128274;</div>
+        <h2>Welcome Back!</h2>
+        <p>Admin Login to access your dashboard</p>
+    </div>
+    <form class="login-form" method="post" action="">
+        {% csrf_token %}
+        <label for="username">Admin Username</label>
+        <input type="text" id="username" name="username" required>
+        {% if form.username.errors %}
+            <div class="error">{{ form.username.errors.0 }}</div>
+        {% endif %}
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+        {% if form.password.errors %}
+            <div class="error">{{ form.password.errors.0 }}</div>
+        {% endif %}
+        <div class="actions">
+            <label><input type="checkbox" name="remember"> Remember me</label>
+            <a href="/password_reset/">Forgot Password?</a>
+        </div>
+        <button type="submit">&#128274; Login to Dashboard</button>
+    </form>
+</div>
+</body>
+</html>

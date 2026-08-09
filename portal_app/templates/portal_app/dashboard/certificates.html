@@ -1,0 +1,22 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}Certificates{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero mb-3">
+    <div>
+        <p class="hero-kicker mb-1">Certificates</p>
+        <h2 class="mb-2">Certificate Services</h2>
+        <p class="mb-0 text-muted">Manage certificate applications and issued documents.</p>
+    </div>
+</section>
+
+<div class="card panel-card p-3">
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-primary btn-sm" href="{% url 'apply_birth_certificate' %}">Birth Certificate</a>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'apply_death_certificate' %}">Death Certificate</a>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'apply_income_certificate' %}">Income Certificate</a>
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'my_certificates' %}">My Certificates</a>
+    </div>
+</div>
+{% endblock %}

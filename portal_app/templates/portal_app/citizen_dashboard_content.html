@@ -1,0 +1,275 @@
+{% extends 'portal_app/dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="content-header">
+    <h1 class="content-title">Citizen Dashboard</h1>
+    <p class="content-subtitle">Welcome back, {{ request.user.get_full_name|default:request.user.username }}! Manage your applications and services.</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card border-left-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-primary">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="mb-0">{{ stats.total_applications }}</h3>
+                        <p class="text-muted mb-0">Total Applications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card border-left-warning">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-warning">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="mb-0">{{ stats.pending }}</h3>
+                        <p class="text-muted mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card border-left-success">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-success">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="mb-0">{{ stats.approved }}</h3>
+                        <p class="text-muted mb-0">Approved</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card border-left-danger">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box bg-danger">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h3 class="mb-0">{{ stats.rejected }}</h3>
+                        <p class="text-muted mb-0">Rejected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Applications and Complaints -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>Recent Applications
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_applications %}
+                    <div class="list-group list-group-flush">
+                        {% for app in recent_applications %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">#{{ app.id }} - {{ app.get_certificate_type_display|default:"General" }}</h6>
+                                    <small class="text-muted">{{ app.applied_date|date:"d M Y" }}</small>
+                                </div>
+                                <span class="badge bg-{{ app.status_color|default:'secondary' }}">
+                                    {{ app.get_status_display|default:app.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                        <h6>No Applications</h6>
+                        <p class="text-muted small">You haven't submitted any applications yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-megaphone me-2"></i>Recent Complaints
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if complaints %}
+                    <div class="list-group list-group-flush">
+                        {% for complaint in complaints %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ complaint.title }}</h6>
+                                    <small class="text-muted">{{ complaint.created_date|date:"d M Y" }}</small>
+                                </div>
+                                <span class="badge bg-{{ complaint.status_color|default:'secondary' }}">
+                                    {{ complaint.get_status_display|default:complaint.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-2x text-muted mb-2"></i>
+                        <h6>No Complaints</h6>
+                        <p class="text-muted small">You haven't filed any complaints yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-rocket me-2"></i>Quick Actions
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'apply_birth_certificate' %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-baby me-2"></i>Birth Certificate
+                </a>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'apply_death_certificate' %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-cross me-2"></i>Death Certificate
+                </a>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'apply_income_certificate' %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-money-bill me-2"></i>Income Certificate
+                </a>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <a href="{% url 'file_complaint' %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-megaphone me-2"></i>File Complaint
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-left-primary {
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .border-left-success {
+        border-left: 4px solid #198754;
+    }
+    
+    .border-left-warning {
+        border-left: 4px solid #ffc107;
+    }
+    
+    .border-left-danger {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .bg-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    }
+    
+    .bg-success {
+        background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    }
+    
+    .bg-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    }
+    
+    .bg-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #bb2d3b 100%);
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+    }
+    
+    .list-group-item {
+        border: none;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .list-group-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid #0d6efd;
+        color: #0d6efd;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+    }
+</style>
+{% endblock %}

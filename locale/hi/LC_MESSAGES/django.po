@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: digital-grampanchayat\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-12 00:00+0000\n"
+"PO-Revision-Date: 2026-04-12 00:00+0000\n"
+"Last-Translator: Copilot\n"
+"Language-Team: Hindi\n"
+"Language: hi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Digital Gram Panchayat Portal"
+msgstr "डिजिटल ग्राम पंचायत पोर्टल"
+
+msgid "Digital Gram Panchayat"
+msgstr "डिजिटल ग्राम पंचायत"
+
+msgid "Home"
+msgstr "होम"
+
+msgid "Services"
+msgstr "सेवाएं"
+
+msgid "Dashboard"
+msgstr "डैशबोर्ड"
+
+msgid "Payments"
+msgstr "भुगतान"
+
+msgid "Profile"
+msgstr "प्रोफाइल"
+
+msgid "Notifications"
+msgstr "सूचनाएं"
+
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+msgid "Logout"
+msgstr "लॉगआउट"
+
+msgid "Login"
+msgstr "लॉगिन"
+
+msgid "Register"
+msgstr "पंजीकरण"
+
+msgid "Government Portal"
+msgstr "सरकारी पोर्टल"
+
+msgid "account"
+msgstr "खाता"
+
+msgid "Current section"
+msgstr "वर्तमान अनुभाग"
+
+msgid "Only one page loads at a time"
+msgstr "एक समय में केवल एक पेज लोड होता है"
+
+msgid "Each menu item opens its own template."
+msgstr "हर मेनू आइटम अपना अलग टेम्पलेट खोलता है।"
+
+msgid "Track Application"
+msgstr "आवेदन ट्रैक करें"
+
+msgid "About Us"
+msgstr "हमारे बारे में"
+
+msgid "Contact"
+msgstr "संपर्क"
+
+msgid "Quick Links"
+msgstr "त्वरित लिंक"
+
+msgid "Gram Panchayat Office"
+msgstr "ग्राम पंचायत कार्यालय"
+
+msgid "Digital Gram Panchayat Portal. All rights reserved."
+msgstr "डिजिटल ग्राम पंचायत पोर्टल। सर्वाधिकार सुरक्षित।"
+
+msgid "Open Help Desk"
+msgstr "हेल्प डेस्क खोलें"
+
+msgid "Close Chat"
+msgstr "चैट बंद करें"
+
+msgid "Gram Panchayat Help Desk"
+msgstr "ग्राम पंचायत हेल्प डेस्क"
+
+msgid "Type your message..."
+msgstr "अपना संदेश लिखें..."
+
+msgid "Send"
+msgstr "भेजें"
+
+msgid "Quick Suggestions"
+msgstr "त्वरित सुझाव"
+
+msgid "No new notifications."
+msgstr "कोई नई सूचना नहीं।"
+
+msgid "Read"
+msgstr "पढ़ा गया"
+
+msgid "Unread"
+msgstr "अपठित"
+
+msgid "Mark all read"
+msgstr "सभी को पढ़ा हुआ चिह्नित करें"
+
+msgid "Latest service updates"
+msgstr "सेवा के नवीनतम अपडेट"
+
+msgid "Theme"
+msgstr "थीम"
+
+msgid "Switch language"
+msgstr "भाषा बदलें"
+
+msgid "Role"
+msgstr "भूमिका"
+
+msgid "Activity History"
+msgstr "गतिविधि इतिहास"
+
+msgid "Secure Operations Console"
+msgstr "सुरक्षित संचालन कंसोल"
+
+msgid "Search services, applications, complaints..."
+msgstr "सेवाएं, आवेदन, शिकायतें खोजें..."
+
+msgid "Search users, applications, complaints..."
+msgstr "उपयोगकर्ता, आवेदन, शिकायतें खोजें..."
+
+msgid "Create Citizen Account"
+msgstr "नागरिक खाता बनाएं"
+
+msgid "Secure onboarding with OTP verification for Digital Gram Panchayat Portal"
+msgstr "डिजिटल ग्राम पंचायत पोर्टल के लिए OTP सत्यापन के साथ सुरक्षित ऑनबोर्डिंग"
+
+msgid "Section 1: Basic Info"
+msgstr "खंड 1: मूल जानकारी"
+
+msgid "Section 2: Personal Details"
+msgstr "खंड 2: व्यक्तिगत विवरण"
+
+msgid "Section 3: Address"
+msgstr "खंड 3: पता"
+
+msgid "Username"
+msgstr "यूज़रनेम"
+
+msgid "Full Name"
+msgstr "पूरा नाम"
+
+msgid "Email"
+msgstr "ईमेल"
+
+msgid "Mobile Number"
+msgstr "मोबाइल नंबर"
+
+msgid "Password"
+msgstr "पासवर्ड"
+
+msgid "Confirm Password"
+msgstr "पासवर्ड की पुष्टि करें"
+
+msgid "Gender"
+msgstr "लिंग"
+
+msgid "Date of Birth"
+msgstr "जन्म तिथि"
+
+msgid "Address"
+msgstr "पता"
+
+msgid "State"
+msgstr "राज्य"
+
+msgid "District"
+msgstr "जिला"
+
+msgid "Pincode"
+msgstr "पिनकोड"
+
+msgid "Create Account"
+msgstr "खाता बनाएं"
+
+msgid "Already have an account?"
+msgstr "क्या आपका पहले से खाता है?"
+
+msgid "Login here"
+msgstr "यहां लॉगिन करें"
+
+msgid "Citizen Login"
+msgstr "नागरिक लॉगिन"
+
+msgid "Username or Email"
+msgstr "यूज़रनेम या ईमेल"
+
+msgid "Enter your username or email"
+msgstr "अपना यूज़रनेम या ईमेल दर्ज करें"
+
+msgid "Enter your password"
+msgstr "अपना पासवर्ड दर्ज करें"
+
+msgid "Remember me for 30 days"
+msgstr "मुझे 30 दिनों तक याद रखें"
+
+msgid "Sign In"
+msgstr "साइन इन"
+
+msgid "Don't have an account?"
+msgstr "क्या आपका खाता नहीं है?"
+
+msgid "Register Now"
+msgstr "अभी पंजीकरण करें"
+
+msgid "Forgot Password?"
+msgstr "पासवर्ड भूल गए?"
+
+msgid "Are you an administrator?"
+msgstr "क्या आप प्रशासक हैं?"
+
+msgid "Admin Login"
+msgstr "एडमिन लॉगिन"
+
+msgid "Apply Now"
+msgstr "अभी आवेदन करें"
+
+msgid "Submit"
+msgstr "जमा करें"
+
+msgid "Cancel"
+msgstr "रद्द करें"
+
+msgid "Apply"
+msgstr "आवेदन करें"
+
+msgid "Name must be at least 2 characters long."
+msgstr "नाम कम से कम 2 अक्षरों का होना चाहिए।"
+
+msgid "Username is required."
+msgstr "यूज़रनेम आवश्यक है।"
+
+msgid "This email is already registered."
+msgstr "यह ईमेल पहले से पंजीकृत है।"
+
+msgid "This mobile number is already registered."
+msgstr "यह मोबाइल नंबर पहले से पंजीकृत है।"
+
+msgid "Pincode must be exactly 6 digits."
+msgstr "पिनकोड ठीक 6 अंकों का होना चाहिए।"
+
+msgid "Date of birth must be in the past."
+msgstr "जन्म तिथि भूतकाल की होनी चाहिए।"
+
+msgid "Switch language"
+msgstr "भाषा बदलें"
+
+msgid "Verify OTP"
+msgstr "OTP सत्यापित करें"
+
+msgid "Verify Your Email"
+msgstr "अपना ईमेल सत्यापित करें"
+
+msgid "Enter OTP"
+msgstr "OTP दर्ज करें"
+
+msgid "OTP expires in"
+msgstr "OTP समाप्त होगा"
+
+msgid "Didn't receive the OTP?"
+msgstr "OTP नहीं मिला?"
+
+msgid "Resend OTP"
+msgstr "OTP दोबारा भेजें"
+
+msgid "Resend available after %(seconds)ss"
+msgstr "%(seconds)s सेकंड बाद दोबारा भेजा जा सकता है"
+
+msgid "Need help?"
+msgstr "मदद चाहिए?"
+
+msgid "Contact Support"
+msgstr "सहायता से संपर्क करें"
+
+msgid "Back to Registration"
+msgstr "पंजीकरण पर वापस जाएं"
+
+msgid "Your data is encrypted and secure. We never share your information."
+msgstr "आपका डेटा एन्क्रिप्टेड और सुरक्षित है। हम आपकी जानकारी कभी साझा नहीं करते।"
+
+msgid "Why OTP?"
+msgstr "OTP क्यों?"
+
+msgid "OTP ensures only you can access this account"
+msgstr "OTP सुनिश्चित करता है कि केवल आप ही इस खाते तक पहुंच सकते हैं"
+
+msgid "Secure"
+msgstr "सुरक्षित"
+
+msgid "Military-grade encryption protects your account"
+msgstr "सैन्य-स्तर का एन्क्रिप्शन आपके खाते की सुरक्षा करता है"
+
+msgid "Quick"
+msgstr "तेज़"
+
+msgid "OTP is valid for 10 minutes from email delivery."
+msgstr "ईमेल भेजे जाने के बाद OTP 10 मिनट तक मान्य है।"
+
+msgid "You must be at least 18 years old to self-register."
+msgstr "स्व-पंजीकरण के लिए आपकी आयु कम से कम 18 वर्ष होनी चाहिए।"
+
+msgid "Profile photo must be less than 2MB."
+msgstr "प्रोफाइल फोटो 2MB से कम होनी चाहिए।"
+
+msgid "Choose a username"
+msgstr "यूज़रनेम चुनें"
+
+msgid "Enter your full name"
+msgstr "अपना पूरा नाम दर्ज करें"
+
+msgid "Enter email address"
+msgstr "ईमेल पता दर्ज करें"
+
+msgid "10-digit mobile number"
+msgstr "10 अंकों का मोबाइल नंबर"
+
+msgid "House no, street, landmark, area"
+msgstr "मकान नंबर, सड़क, लैंडमार्क, क्षेत्र"
+
+msgid "6-digit pincode"
+msgstr "6 अंकों का पिनकोड"
+
+msgid "Optional 12-digit Aadhaar number"
+msgstr "वैकल्पिक 12 अंकों का आधार नंबर"

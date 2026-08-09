@@ -1,0 +1,194 @@
+{% extends 'portal_app/template_base.html' %}
+
+{% block title %}Staff Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xl-3 col-sm-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Total Applications</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ total_applications|default:0 }}</h3>
+                        <p class="mb-0 text-muted">All Applications</p>
+                    </div>
+                    <div class="text-primary">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Pending Review</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ pending_applications|default:0 }}</h3>
+                        <p class="mb-0 text-muted">Awaiting Review</p>
+                    </div>
+                    <div class="text-warning">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Under Review</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ under_review_applications|default:0 }}</h3>
+                        <p class="mb-0 text-muted">In Progress</p>
+                    </div>
+                    <div class="text-info">
+                        <i class="fas fa-eye fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Approved</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ approved_applications|default:0 }}</h3>
+                        <p class="mb-0 text-muted">Completed</p>
+                    </div>
+                    <div class="text-success">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Recent Applications</h4>
+                <div class="card-action">
+                    <a href="{% url 'admin_applications' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> View All
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Application No.</th>
+                                <th>Applicant</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in recent_applications|default:"" %}
+                                <tr>
+                                    <td>{{ app.application_number }}</td>
+                                    <td>{{ app.applicant.get_full_name|default:app.applicant.username }}</td>
+                                    <td>{{ app.get_application_type_display }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ app.status|default:'secondary' }}">
+                                            {{ app.get_status_display|default:app.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ app.applied_date|date:"d M Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'admin_review_application' app.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> Review
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No recent applications</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Quick Actions</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'admin_applications' %}" class="btn btn-primary btn-block">
+                            <i class="fas fa-file-alt"></i> Applications
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'admin_complaints' %}" class="btn btn-warning btn-block">
+                            <i class="fas fa-megaphone"></i> Complaints
+                        </a>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <button class="btn btn-info btn-block">
+                            <i class="fas fa-chart-bar"></i> Reports
+                        </button>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <button class="btn btn-success btn-block">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Work Statistics</h4>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>Today's Work</span>
+                    <span class="badge badge-primary">{{ today_applications|default:0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>This Week</span>
+                    <span class="badge badge-success">{{ week_applications|default:0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span>This Month</span>
+                    <span class="badge badge-info">{{ month_applications|default:0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Average Time</span>
+                    <span class="badge badge-warning">2.5 days</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

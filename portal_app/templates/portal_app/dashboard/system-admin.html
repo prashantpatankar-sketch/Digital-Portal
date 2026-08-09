@@ -1,0 +1,116 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block content %}
+<div class="content-header">
+    <h1 class="mb-3">System Administration</h1>
+    <p class="text-muted">Django Admin Panel - Manage your application data and settings</p>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="admin-iframe-container">
+            <iframe 
+                src="/admin/" 
+                class="admin-iframe"
+                title="Django Admin Panel"
+                frameborder="0"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-iframe-container {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 250px);
+        min-height: 600px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .admin-iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: white;
+    }
+    
+    .admin-iframe-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        transition: opacity 0.3s ease;
+    }
+    
+    .admin-iframe-container::after {
+        content: 'Loading Django Admin...';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        color: #6b7280;
+        z-index: 11;
+        transition: opacity 0.3s ease;
+    }
+    
+    .admin-iframe-container.loaded::before,
+    .admin-iframe-container.loaded::after {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    @media (max-width: 768px) {
+        .admin-iframe-container {
+            height: calc(100vh - 200px);
+            min-height: 500px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .admin-iframe-container {
+            height: calc(100vh - 180px);
+            min-height: 400px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const iframe = document.querySelector('.admin-iframe');
+    const container = document.querySelector('.admin-iframe-container');
+    
+    // Hide loading overlay when iframe loads
+    iframe.addEventListener('load', function() {
+        setTimeout(() => {
+            container.classList.add('loaded');
+        }, 500);
+    });
+    
+    // Handle iframe errors
+    iframe.addEventListener('error', function() {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h5>Unable to load Django Admin</h5>
+                <p class="text-muted">Please check your admin permissions or try again later.</p>
+                <button class="btn btn-primary" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i> Retry
+                </button>
+            </div>
+        `;
+    });
+});
+</script>
+{% endblock %}

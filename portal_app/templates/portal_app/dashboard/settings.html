@@ -1,0 +1,17 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero mb-3">
+    <div>
+        <p class="hero-kicker mb-1">Account</p>
+        <h2 class="mb-2">Settings</h2>
+        <p class="mb-0 text-muted">Update profile, security preferences, and account controls.</p>
+    </div>
+</section>
+
+<div class="card panel-card p-3">
+    <a class="btn btn-primary btn-sm" href="{% url 'account_settings' %}">Open Account Settings</a>
+</div>
+{% endblock %}

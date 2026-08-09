@@ -1,0 +1,237 @@
+{% extends 'portal_app/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Digital Gram Panchayat{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'portal_app/css/dashboard_modern.css' %}">
+<link rel="stylesheet" href="{% static 'portal_app/css/dashboard_premium.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page" data-dashboard-root data-dashboard-api="{% url 'dashboard_data_api' %}">
+    <div class="container-fluid px-0">
+        <section class="dashboard-hero-card fade-enter">
+            <div class="row align-items-end g-4">
+                <div class="col-xl-8">
+                    <span class="dashboard-kicker"><i class="bi bi-speedometer2 me-2"></i>Citizen Overview</span>
+                    <h1 class="dashboard-title">Dashboard</h1>
+                    <p class="dashboard-subtitle mb-0">Review applications, complaints, and service activity from a single analytics page with live charts and quick actions.</p>
+                </div>
+                <div class="col-xl-4 text-xl-end">
+                    <a href="{% url 'services' %}" class="btn btn-dashboard-primary gp-ripple">
+                        <i class="bi bi-file-earmark-plus me-2"></i>Apply for Service
+                    </a>
+                </div>
+            </div>
+
+            <div class="dashboard-meta-grid">
+                <div class="dashboard-meta-item">
+                    <span class="meta-label">Applications</span>
+                    <span class="meta-value" data-counter>{{ total_applications|default:"0" }}</span>
+                </div>
+                <div class="dashboard-meta-item">
+                    <span class="meta-label">Pending</span>
+                    <span class="meta-value" data-counter>{{ pending_applications|default:"0" }}</span>
+                </div>
+                <div class="dashboard-meta-item">
+                    <span class="meta-label">Resolved complaints</span>
+                    <span class="meta-value" data-counter>{{ complaint_counts.resolved|default:"0" }}</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="metric-grid mt-4">
+            <div class="row g-4">
+                <div class="col-md-6 col-xl-3">
+                    <article class="metric-card fade-enter">
+                        <div class="metric-icon metric-blue"><i class="bi bi-inbox-fill"></i></div>
+                        <div class="metric-copy">
+                            <span class="metric-label">Total Applications</span>
+                            <span class="metric-value" data-counter>{{ total_applications|default:"0" }}</span>
+                            <span class="metric-note">All requests submitted by the citizen account.</span>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <article class="metric-card fade-enter">
+                        <div class="metric-icon metric-amber"><i class="bi bi-hourglass-split"></i></div>
+                        <div class="metric-copy">
+                            <span class="metric-label">Pending</span>
+                            <span class="metric-value" data-counter>{{ pending_applications|default:"0" }}</span>
+                            <span class="metric-note">Requests currently under review.</span>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <article class="metric-card fade-enter">
+                        <div class="metric-icon metric-green"><i class="bi bi-check2-circle"></i></div>
+                        <div class="metric-copy">
+                            <span class="metric-label">Approved</span>
+                            <span class="metric-value" data-counter>{{ approved_applications|default:"0" }}</span>
+                            <span class="metric-note">Applications cleared for issue.</span>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-md-6 col-xl-3">
+                    <article class="metric-card fade-enter">
+                        <div class="metric-icon metric-red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                        <div class="metric-copy">
+                            <span class="metric-label">Complaints Open</span>
+                            <span class="metric-value" data-counter>{{ complaint_counts.open|default:"0" }}</span>
+                            <span class="metric-note">Active grievance tracking items.</span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="chart-grid mt-4">
+            <div class="row g-4">
+                <div class="col-xl-7">
+                    <article class="panel-card chart-card fade-enter">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-kicker">Activity Trend</span>
+                                <h2>Applications and Complaints</h2>
+                            </div>
+                            <span class="panel-status" id="dashboardChartStatus">Loading analytics...</span>
+                        </div>
+                        <div class="chart-shell">
+                            <canvas id="applicationsTrendChart" height="120"></canvas>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-xl-5">
+                    <article class="panel-card chart-card fade-enter">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-kicker">Service Mix</span>
+                                <h2>Distribution Overview</h2>
+                            </div>
+                        </div>
+                        <div class="chart-shell chart-shell--tall">
+                            <canvas id="serviceMixChart"></canvas>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="insight-grid mt-4">
+            <div class="row g-4">
+                <div class="col-xl-5">
+                    <article class="panel-card insight-card fade-enter">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-kicker">Smart Insights</span>
+                                <h2>What the dashboard says</h2>
+                            </div>
+                        </div>
+                        <div id="dashboardInsights" class="insight-list">
+                            <div class="insight-placeholder">Loading insights from analytics API...</div>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-xl-7">
+                    <article class="panel-card quick-action-card fade-enter">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-kicker">Quick Actions</span>
+                                <h2>Fast navigation</h2>
+                            </div>
+                        </div>
+                        <div class="quick-action-grid">
+                            <a href="{% url 'services' %}" class="quick-action-tile gp-ripple">
+                                <i class="bi bi-file-earmark-plus"></i>
+                                <span>Apply Service</span>
+                            </a>
+                            <a href="{% url 'payments' %}" class="quick-action-tile gp-ripple">
+                                <i class="bi bi-credit-card-2-front"></i>
+                                <span>Payments</span>
+                            </a>
+                            <a href="{% url 'profile' %}" class="quick-action-tile gp-ripple">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="{% url 'settings' %}" class="quick-action-tile gp-ripple">
+                                <i class="bi bi-gear"></i>
+                                <span>Settings</span>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="activity-grid mt-4 mb-4">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <article class="panel-card fade-enter">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-kicker">Recent Applications</span>
+                                <h2>Latest service activity</h2>
+                            </div>
+                        </div>
+                        {% if recent_applications %}
+                        <div class="table-responsive">
+                            <table class="table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for application in recent_applications %}
+                                    <tr>
+                                        <td>{{ application.service_name }}</td>
+                                        <td><span class="status-pill status-{{ application.status|slugify }}">{{ application.status }}</span></td>
+                                        <td>{{ application.created_at|date:"d M Y" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No recent applications available.</div>
+                        {% endif %}
+                    </article>
+                </div>
+                <div class="col-lg-5">
+                    <article class="panel-card fade-enter">
+                        <div class="panel-header">
+                            <div>
+                                <span class="panel-kicker">Complaints</span>
+                                <h2>Grievance status</h2>
+                            </div>
+                        </div>
+                        {% if complaints %}
+                        <div class="complaint-list">
+                            {% for complaint in complaints %}
+                            <div class="complaint-item">
+                                <div>
+                                    <h3>{{ complaint.subject }}</h3>
+                                    <p>{{ complaint.description|default:"No description provided."|truncatechars:90 }}</p>
+                                </div>
+                                <span class="status-pill status-{{ complaint.status|slugify }}">{{ complaint.status }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">No complaint records available.</div>
+                        {% endif %}
+                    </article>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'portal_app/js/dashboard_premium.js' %}"></script>
+{% endblock %}

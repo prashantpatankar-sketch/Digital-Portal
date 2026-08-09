@@ -1,0 +1,95 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}Edit User{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h3 class="mb-1">Edit User</h3>
+        <p class="text-muted mb-0">Update account details for {{ managed_user.get_full_name|default:managed_user.username }}.</p>
+    </div>
+    <a href="{% url 'admin_users' %}" class="btn btn-outline-primary btn-sm">Back to Users</a>
+</div>
+
+<div class="card p-4">
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label class="form-label">Username</label>
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Role</label>
+            {{ form.role }}
+            {{ form.role.errors }}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">First Name</label>
+            {{ form.first_name }}
+            {{ form.first_name.errors }}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Last Name</label>
+            {{ form.last_name }}
+            {{ form.last_name.errors }}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Phone Number</label>
+            {{ form.phone_number }}
+            {{ form.phone_number.errors }}
+        </div>
+        <div class="col-12">
+            <label class="form-label">Address</label>
+            {{ form.address }}
+            {{ form.address.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Village</label>
+            {{ form.village }}
+            {{ form.village.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Taluka</label>
+            {{ form.taluka }}
+            {{ form.taluka.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">District</label>
+            {{ form.district }}
+            {{ form.district.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">State</label>
+            {{ form.state }}
+            {{ form.state.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Pincode</label>
+            {{ form.pincode }}
+            {{ form.pincode.errors }}
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Profile Photo</label>
+            {{ form.profile_photo }}
+            {{ form.profile_photo.errors }}
+        </div>
+        <div class="col-12">
+            <div class="form-check mt-2">
+                {{ form.is_active }}
+                <label class="form-check-label ms-2" for="id_is_active">Active account</label>
+            </div>
+            {{ form.is_active.errors }}
+        </div>
+        <div class="col-12 d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'admin_users' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}Electricity Bill Service{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h3 class="mb-0"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Electricity Bill Service</h3>
+        <span class="badge bg-primary">Citizen Self-Service</span>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Fetch Bill</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="fetch">
+                        <label class="form-label">Consumer Number</label>
+                        {{ lookup_form.consumer_number }}
+                        <small class="text-muted d-block mt-2">Enter your consumer number to fetch current month bill.</small>
+                        <button type="submit" class="btn btn-primary mt-3 w-100">
+                            <i class="bi bi-search me-2"></i>View Bill Details
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="mb-2">Filters</h6>
+                    <form method="get" class="row g-2">
+                        <div class="col-12">
+                            <input class="form-control" type="text" name="q" value="{{ search_query }}" placeholder="Search consumer number">
+                        </div>
+                        <div class="col-12">
+                            <select class="form-select" name="status">
+                                <option value="">All Status</option>
+                                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="paid" {% if status_filter == 'paid' %}selected{% endif %}>Paid</option>
+                                <option value="overdue" {% if status_filter == 'overdue' %}selected{% endif %}>Overdue</option>
+                            </select>
+                        </div>
+                        <div class="col-12 d-grid">
+                            <button class="btn btn-outline-secondary" type="submit">Apply Filter</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Bill History</h5>
+                    <span class="badge bg-secondary">{{ bills|length }} records</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Consumer No.</th>
+                                    <th>Month</th>
+                                    <th>Amount</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bill in bills %}
+                                <tr>
+                                    <td>{{ bill.consumer_number }}</td>
+                                    <td>{{ bill.bill_month }}</td>
+                                    <td>Rs. {{ bill.amount }}</td>
+                                    <td>{{ bill.due_date }}</td>
+                                    <td>
+                                        {% if bill.payment_status == 'paid' %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% elif bill.payment_status == 'overdue' %}
+                                            <span class="badge bg-danger">Overdue</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            {% if bill.payment_status != 'paid' %}
+                                            <form method="post" class="d-inline">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="pay">
+                                                <input type="hidden" name="bill_id" value="{{ bill.id }}">
+                                                <button class="btn btn-sm btn-success" type="submit">Pay</button>
+                                            </form>
+                                            {% endif %}
+                                            <a class="btn btn-sm btn-outline-primary" href="{% url 'download_service_bill_pdf' 'electricity' bill.id %}">PDF</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No electricity bills found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

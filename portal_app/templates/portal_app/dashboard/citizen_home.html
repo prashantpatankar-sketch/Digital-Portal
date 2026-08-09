@@ -1,0 +1,158 @@
+{% extends "portal_app/dashboard/base.html" %}
+
+{% block title %}Citizen Dashboard{% endblock %}
+
+{% block content %}
+<section class="dashboard-hero mb-4">
+    <div>
+        <p class="hero-kicker mb-1">Digital Grampanchayat Portal</p>
+        <h2 class="mb-2">Welcome back, {{ request.user.get_full_name|default:request.user.username }}</h2>
+        <p class="mb-0 text-muted">Access certificates, track requests, pay bills, and register grievances from one place.</p>
+    </div>
+    <div class="hero-actions">
+        <a href="{% url 'apply_income_certificate' %}" class="btn btn-primary btn-sm"><i class="fas fa-certificate me-1"></i>Apply Certificate</a>
+        <a href="{% url 'electricity_bill_service' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-file-invoice me-1"></i>Pay Bill</a>
+        <a href="{% url 'file_complaint' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-bullhorn me-1"></i>File Complaint</a>
+    </div>
+</section>
+
+<section class="row g-3 mb-4">
+    <div class="col-12 col-xl-5">
+        <div class="card panel-card chart-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="hero-kicker mb-1">Analytics</p>
+                    <h5 class="mb-0">User Growth</h5>
+                </div>
+                <span class="badge rounded-pill text-bg-primary">Live</span>
+            </div>
+            <div class="card-body">
+                <canvas id="userGrowthChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6 col-xl-4">
+        <div class="card panel-card chart-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="hero-kicker mb-1">Operations</p>
+                    <h5 class="mb-0">Applications</h5>
+                </div>
+                <span class="badge rounded-pill text-bg-info">Trend</span>
+            </div>
+            <div class="card-body">
+                <canvas id="applicationsChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6 col-xl-3">
+        <div class="card panel-card chart-card h-100 dashboard-reveal">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <p class="hero-kicker mb-1">Status Mix</p>
+                    <h5 class="mb-0">Certificates</h5>
+                </div>
+                <span class="badge rounded-pill text-bg-success">Overview</span>
+            </div>
+            <div class="card-body">
+                <canvas id="certificatesChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <article class="metric-card metric-primary">
+            <div class="metric-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="metric-content"><h3 data-metric-key="total_applications">{{ stats.total_applications }}</h3><p>Total Applications</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-3">
+        <article class="metric-card metric-warning">
+            <div class="metric-icon"><i class="fas fa-hourglass-half"></i></div>
+            <div class="metric-content"><h3 data-metric-key="pending_applications">{{ stats.pending }}</h3><p>Pending</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-3">
+        <article class="metric-card metric-success">
+            <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="metric-content"><h3 data-metric-key="approved_applications">{{ stats.approved }}</h3><p>Approved</p></div>
+        </article>
+    </div>
+    <div class="col-6 col-lg-3">
+        <article class="metric-card metric-danger">
+            <div class="metric-icon"><i class="fas fa-xmark-circle"></i></div>
+            <div class="metric-content"><h3 data-metric-key="rejected_applications">{{ stats.rejected }}</h3><p>Rejected</p></div>
+        </article>
+    </div>
+</section>
+
+<section class="row g-3">
+    <div class="col-xl-7">
+        <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Recent Applications</h5>
+                <a href="{% url 'my_applications' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_applications %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Application</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in recent_applications %}
+                            <tr>
+                                <td>{{ app.application_number }}</td>
+                                <td>{{ app.get_application_type_display }}</td>
+                                <td><span class="badge text-bg-{% if app.status == 'approved' %}success{% elif app.status == 'rejected' %}danger{% elif app.status == 'pending' %}warning{% else %}info{% endif %}">{{ app.get_status_display }}</span></td>
+                                <td>{{ app.applied_date|date:"d M Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-panel">
+                    <i class="fas fa-folder-open"></i>
+                    <p class="mb-0">No applications yet. Use quick actions to get started.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Recent Complaints</h5>
+                <a href="{% url 'my_complaints' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if complaints %}
+                    {% for complaint in complaints %}
+                    <div class="list-item-row">
+                        <div>
+                            <strong>{{ complaint.complaint_number }}</strong>
+                            <div class="small text-muted">{{ complaint.subject|truncatechars:70 }}</div>
+                        </div>
+                        <span class="badge text-bg-{% if complaint.status == 'resolved' %}success{% elif complaint.status == 'closed' %}secondary{% elif complaint.status == 'open' %}warning{% else %}info{% endif %}">{{ complaint.get_status_display }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-panel">
+                        <i class="fas fa-comment-slash"></i>
+                        <p class="mb-0">No complaints filed yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
