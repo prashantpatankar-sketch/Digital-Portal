@@ -95,10 +95,19 @@ else:
     DB_ENGINE = config('DB_ENGINE', default='sqlite' if IS_VERCEL else 'mysql')
 
     if DB_ENGINE == 'sqlite' or IS_VERCEL:
+        import shutil
+        tmp_db = Path('/tmp/db.sqlite3')
+        orig_db = BASE_DIR / 'db.sqlite3'
+        if IS_VERCEL and orig_db.exists() and not tmp_db.exists():
+            try:
+                shutil.copy2(orig_db, tmp_db)
+            except Exception:
+                pass
+        db_path = tmp_db if (IS_VERCEL and tmp_db.exists()) else orig_db
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
+                'NAME': db_path,
             }
         }
     else:
