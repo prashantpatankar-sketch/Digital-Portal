@@ -91,9 +91,10 @@ def get_client_ip(request):
 
 def _redirect_authenticated_user(user):
     """Send users to the dashboard that matches their portal privileges."""
-    if user.is_superuser:
+    role = getattr(user, 'role', '')
+    if user.is_superuser or role == 'admin':
         return redirect('admin_dashboard')
-    if user.is_staff:
+    if user.is_staff or role == 'staff':
         return redirect('staff_dashboard')
     return redirect('dashboard')
 

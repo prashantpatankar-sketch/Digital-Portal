@@ -19,16 +19,21 @@ def _has_role(user, allowed_roles):
     if not getattr(user, 'is_authenticated', False):
         return False
 
-    if 'admin' in allowed_roles and user.is_superuser:
+    if isinstance(allowed_roles, str):
+        allowed_roles = [allowed_roles]
+
+    user_role = getattr(user, 'role', '')
+
+    if 'admin' in allowed_roles and (user.is_superuser or user_role == 'admin'):
         return True
 
-    if 'staff' in allowed_roles and user.is_staff and not user.is_superuser:
+    if 'staff' in allowed_roles and (user.is_staff or user_role == 'staff'):
         return True
 
-    if 'citizen' in allowed_roles and not user.is_staff and not user.is_superuser:
+    if 'citizen' in allowed_roles and (user_role == 'citizen' or (not user.is_staff and not user.is_superuser)):
         return True
 
-    return False
+    return user_role in allowed_roles
 
 
 def role_required(allowed_roles):

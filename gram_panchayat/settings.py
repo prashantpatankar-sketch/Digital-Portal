@@ -130,6 +130,13 @@ else:
 # Custom User Model
 AUTH_USER_MODEL = 'portal_app.CustomUser'
 
+# Session Configuration (Signed Cookies for Serverless & Multi-Instance Compatibility)
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_NAME = 'gram_panchayat_sessionid'
+SESSION_COOKIE_AGE = 86400 * 30
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
